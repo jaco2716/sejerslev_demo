@@ -57,7 +57,17 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+
+        //TUYA setup
+        ndk {
+			abiFilters "armeabi-v7a", "arm64-v8a"
+		}
     }
+
+    //TUYA setup
+    packagingOptions {
+		pickFirst 'lib/*/libc++_shared.so' // An Android Archive (AAR) file contains an Android library. If the .so file exists in multiple AAR files, select the first AAR file.
+	}
 
     signingConfigs {
         release {
@@ -80,4 +90,9 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    //TUYA setup
+    implementation 'com.alibaba:fastjson:1.1.67.android'
+	implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.14.9'
+	implementation 'com.tuya.smart:tuyasmart:4.0.0'
 }
