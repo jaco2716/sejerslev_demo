@@ -1,5 +1,3 @@
-import 'package:flutter/services.dart';
-
 import '/connected_bt_devices.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -13,25 +11,13 @@ void main() {
       providers: [
         ChangeNotifierProvider<LoadingProvider>(create: (context) => LoadingProvider()),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
-
-  static const platform = const MethodChannel("dk.wejeo.sejerslev_demo/tuya");
-
-  Future _loadSurveyMonkey() async {
-    try {
-      await platform.invokeMethod('surveyMonkey', sessionSurveyMonkeyHash).then((result) {
-        print(result);
-      });
-    } on PlatformException catch (e) {
-      print(e);
-    }
-  }
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

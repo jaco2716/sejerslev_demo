@@ -20,7 +20,6 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
-            
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -31,14 +30,6 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-
-        <!--TUYA setup -->
-        <meta-data
-            android:name="TUYA_SMART_APPKEY"
-            android:value="mahhd55s9he9hmvfe4g3" />
-        <meta-data
-            android:name="TUYA_SMART_SECRET"
-            android:value="jmc4vnujmaqru7cxgppwp8wmjhhrqhcd" />
     </application>
      <!-- Use bluetooth -->
     <uses-permission android:name="android.permission.BLUETOOTH" />  
