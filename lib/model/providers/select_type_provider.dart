@@ -18,5 +18,6 @@ class SelectTypeListProvider extends ChangeNotifier {
 class SelectType {
   int id;
   String title;
-  SelectType(this.id, this.title);
+  Widget? leading;
+  SelectType(this.id, this.title, {this.leading});
 }

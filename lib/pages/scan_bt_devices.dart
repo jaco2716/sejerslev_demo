@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:provider/provider.dart';
-import 'model/providers/loading_provider.dart';
+import '../model/providers/loading_provider.dart';
 
 class ScanBtDevices extends StatefulWidget {
   const ScanBtDevices({Key? key}) : super(key: key);

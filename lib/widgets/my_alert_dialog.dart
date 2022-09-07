@@ -23,7 +23,7 @@ class MyAlertDialog extends StatelessWidget {
     this.infoDialog = true,
     this.onlyAction = false,
     this.widgetContent,
-    this.confirmColor,
+    this.confirmColor = Colors.blue,
   }) : super(key: key);
 
   final TextStyle _titleText = const TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
@@ -31,9 +31,9 @@ class MyAlertDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String finalCancelText = cancelText ?? 'Ok';
-    String finalConfirmText = confirmText ?? 'Bekræft';
+    String finalConfirmText = confirmText ?? 'Confirm';
     if (!infoDialog && cancelText == null) {
-      finalCancelText = 'Annuller';
+      finalCancelText = 'Cancel';
     }
 
     return AlertDialog(
@@ -72,7 +72,8 @@ class MyAlertDialog extends StatelessWidget {
                           // height: 40,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              primary: Colors.blue[300],
+                              backgroundColor: infoDialog ? Colors.blue[300] : Colors.white10,
+                              elevation: 0,
                               padding: const EdgeInsets.all(12),
                             ),
                             child: Text(
@@ -92,7 +93,8 @@ class MyAlertDialog extends StatelessWidget {
                         padding: const EdgeInsets.all(8.0),
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            primary: confirmColor ?? Colors.red,
+                            backgroundColor: confirmColor,
+                            elevation: 0,
                             padding: const EdgeInsets.all(12),
                           ),
                           child: Text(
@@ -110,19 +112,19 @@ class MyAlertDialog extends StatelessWidget {
   }
 }
 
-// class MyLoadingDialog extends StatelessWidget {
-//   const MyLoadingDialog({Key? key}) : super(key: key);
+class MyLoadingDialog extends StatelessWidget {
+  const MyLoadingDialog({Key? key}) : super(key: key);
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Dialog(
-//       insetPadding: EdgeInsets.zero,
-//       elevation: 0,
-//       backgroundColor: Colors.black45,
-//       child: Center(child: SizedBox(width: 80, height: 80, child: CircularProgressIndicator())),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return const Dialog(
+      insetPadding: EdgeInsets.zero,
+      elevation: 0,
+      backgroundColor: Colors.black45,
+      child: Center(child: SizedBox(width: 80, height: 80, child: CircularProgressIndicator())),
+    );
+  }
+}
 
 Future<T?> showMyDialog<T>(
   BuildContext context,
@@ -156,6 +158,15 @@ Future<T?> showMyDialog<T>(
       );
     },
   );
+}
+
+void showMyLoadingDialog(BuildContext context) {
+  showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return const MyLoadingDialog();
+      });
 }
 
 // void showMyLoadingDialog(BuildContext context) {

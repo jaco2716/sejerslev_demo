@@ -1,4 +1,4 @@
-import '/connected_bt_devices.dart';
+import '/pages/connected_bt_devices.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'model/providers/loading_provider.dart';
@@ -24,17 +24,27 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.blue,
-      ),
+          brightness: Brightness.dark,
+          primarySwatch: Colors.blue,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+          ),
+          cardTheme: CardTheme(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ButtonStyle(
+              minimumSize: MaterialStateProperty.all<Size>(const Size(120, 50)),
+              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+          floatingActionButtonTheme: const FloatingActionButtonThemeData(backgroundColor: Colors.blue, foregroundColor: Colors.white)),
       // home: const MyHomePage(),
-      home: const Scaffold(
-        // appBar: AppBar(
-        //   title: Text('Demo'),
-        // ),
-        // body: MyHomePage(),
-        body: ConnectedBtDevices(),
-      ),
+      home: const GroupListPage(),
     );
   }
 }
