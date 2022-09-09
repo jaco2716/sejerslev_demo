@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:sejerslev_demo/model/my_group.dart';
 import 'package:sejerslev_demo/pages/add_device_page.dart';
 import 'package:sejerslev_demo/pages/group_settings_page.dart';
+import 'package:sejerslev_demo/widgets/my_single_chart.dart';
 
 import '/widgets/my_chart.dart';
 import '/widgets/my_scrollview_w_constraints.dart';
@@ -51,7 +52,7 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
     List<List<BluetoothService>> devicesServies = [];
     devices = await _flutterBlue.connectedDevices;
     for (var device in devices) {
-      if (widget.myGroup.deviceIds.contains(device.id.id)) {
+      if (widget.myGroup.flowDeviceIds.contains(device.id.id)) {
         var tempService = await device.discoverServices();
         devicesServies.add(tempService);
       }
@@ -62,9 +63,11 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
   Future<void> setupService() async {
     var devicesServies = await getBTDeviceServices();
     if (devicesServies.isEmpty) {
-      setState(() {
-        isLoading = Future.value(false);
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = Future.value(false);
+        });
+      }
       return;
     }
     //Time setup
@@ -103,9 +106,24 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
     await barometerCharacteristic?.setNotifyValue(isNotifying);
     await flowCharacteristic?.setNotifyValue(isNotifying);
     await temperatureCharacteristic?.setNotifyValue(isNotifying);
-    setState(() {
-      isLoading = Future.value(true);
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = Future.value(true);
+      });
+    }
+  }
+
+  void addDevice(int index) async {
+    String? deviceId = await goToPage(AddDevicePage(myGroup: widget.myGroup, index: index), 'AddDevicePage');
+    if (deviceId != null) {
+      widget.myGroup.flowDeviceIds[index] = deviceId;
+      if (mounted) {
+        setState(() {
+          isLoading = Future.value(null);
+        });
+      }
+    }
+    await setupService();
   }
 
   @override
@@ -122,27 +140,6 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
 
   @override
   Widget build(BuildContext context) {
-    // if (dateData.length > 4) {
-    // int byteI = 18;
-    // print('${dateData[0].sublist(1, 3)}- i=$byteI: ${dateData[0].sublist(byteI)}');
-    // print('${dateData[1].sublist(1, 3)}- i=$byteI: ${dateData[1].sublist(byteI)}');
-    // print('${dateData[2].sublist(1, 3)}- i=$byteI: ${dateData[2].sublist(byteI)}');
-    // print('${dateData[3].sublist(1, 3)}- i=$byteI: ${dateData[3].sublist(byteI)}');
-    // print('${dateData[4].sublist(1, 3)}- i=$byteI: ${dateData[4].sublist(byteI)}');
-    // var testValue = [71, 39];
-    // var testValue2 = [39, 69];
-    // var testValue3 = [69, 39];
-    // var testValue4 = [39, 73];
-    // var testValue5 = [73, 39];
-
-    // print('$testValue = ${ByteData.view(Uint8List.fromList(testValue).buffer).getInt16(0, Endian.little)}');
-    // print('$testValue2 = ${ByteData.view(Uint8List.fromList(testValue2).buffer).getInt16(0, Endian.little)}');
-    // print('$testValue3 = ${ByteData.view(Uint8List.fromList(testValue3).buffer).getInt16(0, Endian.little)}');
-    // print('$testValue4 = ${ByteData.view(Uint8List.fromList(testValue4).buffer).getInt16(0, Endian.little)}');
-    // print('$testValue5 = ${ByteData.view(Uint8List.fromList(testValue5).buffer).getInt16(0, Endian.little)}');
-
-    // print(dateData[0][21]);
-    // }
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.myGroup.title),
@@ -151,33 +148,21 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
               onPressed: () async {
                 String? deviceId = await goToPage(GroupSettingsPage(myGroup: widget.myGroup), 'GroupSettingsPage');
                 if (deviceId != null) {
-                  widget.myGroup.deviceIds.add(deviceId);
-                  setState(() {
-                    isLoading = Future.value(null);
-                  });
+                  widget.myGroup.flowDeviceIds.add(deviceId);
+                  if (mounted) {
+                    setState(() {
+                      isLoading = Future.value(null);
+                    });
+                  }
                 }
                 await setupService();
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //         builder: (context) => SingleChartPage(
-                //                 combinedStreams: CombineLatestStream.list([
-                //               pressureCharacteristic!.value,
-                //               barometerCharacteristic!.value,
-                //               flowCharacteristic!.value,
-                //             ]))));
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //         builder: (context) => DataTestingPage(
-                //             dataService: dataService!,
-                //             timeService: timeService!,
-                //             pressureCharacteristic: pressureCharacteristic!,
-                //             flowCharacteristic: flowCharacteristic!,
-                //             timeCharacteristic: timeCharacteristic!)));
               },
               icon: const Icon(Icons.settings))
         ],
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1),
+        ),
       ),
       body: FutureBuilder<bool?>(
         future: isLoading,
@@ -185,214 +170,117 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
-          } else if (!snapshot.data!) {
-            return Column(
-              children: [
-                const SizedBox(width: double.infinity, height: 40),
-                const Icon(
-                  Icons.devices,
-                  size: 140,
-                  color: Colors.grey,
-                ),
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    'No devices',
-                    // style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: ElevatedButton(
-                      onPressed: () async {
-                        String? deviceId = await goToPage(AddDevicePage(myGroup: widget.myGroup), 'AddDevicePage');
-                        if (deviceId != null) {
-                          widget.myGroup.deviceIds.add(deviceId);
-                          setState(() {
-                            isLoading = Future.value(null);
-                          });
-                        }
-                        await setupService();
-                      },
-                      child: const Text('Add Device')),
-                ),
-              ],
-            );
           }
-          return ChangeNotifierProvider(
-              create: (context) => SelectTypeListProvider([
-                    SelectType(0, 'Gas Flow - CFH'),
-                    SelectType(1, 'Pressure - PSI'),
-                  ]),
-              child:
-                  // builder: (context, child) {
-                  //   var selectTypeListProvider = Provider.of<SelectTypeListProvider>(context);
-
-                  //   return
-                  MyScrollviewWConstraints(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // ElevatedButton(
-                    //     onPressed: () {
-                    //       selectTypeListProvider.updatetest();
-                    //     },
-                    //     child: Text('s')),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: StreamBuilder<List<List<int>>>(
-                          // stream: pressureCharacteristic?.value,
-                          stream: CombineLatestStream.list([
+          // } else if (!snapshot.data!) {
+          //   return Row(
+          //     children: [
+          //       Expanded(
+          //           child: NoDeviceAdded(
+          //               title: 'Add Energy Meter',
+          //               icon: const Icon(Icons.electric_bolt_rounded),
+          //               onPressed: () {
+          //                 setState(() {
+          //                   widget.myGroup.energyDeviceIds[0] = 'Energy Meter';
+          //                 });
+          //                 // addDevice(0);
+          //               })),
+          //       Expanded(
+          //         child: Card(
+          //             elevation: 30,
+          //             color: Colors.grey[850],
+          //             child: NoDeviceAdded(title: 'Add Flow Meter', icon: const Icon(Icons.gas_meter_rounded), onPressed: () => addDevice(1))),
+          //       ),
+          //       Expanded(child: NoDeviceAdded(title: 'Add Flow Meter', icon: const Icon(Icons.gas_meter_rounded), onPressed: () => addDevice(2))),
+          //       // Column(
+          //       //   children: [
+          //       //     const SizedBox(width: double.infinity, height: 40),
+          //       //     const Icon(
+          //       //       Icons.devices,
+          //       //       size: 140,
+          //       //       color: Colors.grey,
+          //       //     ),
+          //       //     const Padding(
+          //       //       padding: EdgeInsets.all(8.0),
+          //       //       child: Text(
+          //       //         'No devices',
+          //       //         // style: TextStyle(color: Colors.grey),
+          //       //       ),
+          //       //     ),
+          //       //     Padding(
+          //       //       padding: const EdgeInsets.all(16.0),
+          //       //       child: ElevatedButton(
+          //       //           onPressed: () async {
+          //       //             String? deviceId = await goToPage(AddDevicePage(myGroup: widget.myGroup), 'AddDevicePage');
+          //       //             if (deviceId != null) {
+          //       //               widget.myGroup.deviceIds.add(deviceId);
+          //       //               if (mounted) {
+          //       //                 setState(() {
+          //       //                   isLoading = Future.value(null);
+          //       //                 });
+          //       //               }
+          //       //             }
+          //       //             await setupService();
+          //       //           },
+          //       //           child: const Text('Add Device')),
+          //       //     ),
+          //       //   ],
+          //       // ),
+          //     ],
+          //   );
+          // }
+          return Row(
+            children: [
+              widget.myGroup.energyDeviceIds[0].isEmpty
+                  ? Expanded(
+                      child: NoDeviceAdded(
+                          title: 'Add Energy Meter',
+                          icon: const Icon(Icons.electric_bolt_rounded),
+                          onPressed: () {
+                            setState(() {
+                              widget.myGroup.energyDeviceIds[0] = 'Energy Meter';
+                            });
+                            // addDevice(0);
+                          }))
+                  : Expanded(child: Center(child: Text(widget.myGroup.energyDeviceIds[0]))),
+              widget.myGroup.flowDeviceIds[0].isEmpty
+                  ? Expanded(
+                      child: Card(
+                          elevation: 30,
+                          color: Colors.grey[850],
+                          child: NoDeviceAdded(title: 'Add Flow Meter', icon: const Icon(Icons.gas_meter_rounded), onPressed: () => addDevice(0))),
+                    )
+                  : Expanded(
+                      child: Card(
+                        color: Colors.grey[850],
+                        elevation: 30,
+                        child: SingleFloPro(
+                          myGroup: widget.myGroup,
+                          streams: CombineLatestStream.list([
                             timeCharacteristic!.value,
                             pressureCharacteristic!.value,
                             barometerCharacteristic!.value,
                             flowCharacteristic!.value,
                             temperatureCharacteristic!.value,
                           ]),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              if (snapshot.data?[0].length != 10 ||
-                                  snapshot.data?[1].length != 4 ||
-                                  snapshot.data?[2].length != 4 ||
-                                  snapshot.data?[3].length != 4 ||
-                                  snapshot.data?[4].length != 2) {
-                                return const SizedBox(height: 150, width: 150, child: Center(child: CircularProgressIndicator()));
-                                // return const SizedBox(height: 250, width: 250, child: Center(child: Text('No data')));
-                              }
-                              var timeBytes = Uint8List.fromList(snapshot.data![0]);
-                              var yearValue = ByteData.view(timeBytes.buffer).getInt16(0, Endian.little);
-                              DateTime date = DateTime(yearValue, timeBytes[2], timeBytes[3], timeBytes[4], timeBytes[5], timeBytes[6]);
-                              var dfTime = DateFormat('HH:mm');
-                              var dfDate = DateFormat('dd/MM/yyyy');
-
-                              var barometerBytes = Uint8List.fromList(snapshot.data![2]);
-                              var barometerData = ByteData.view(barometerBytes.buffer).getInt32(0, Endian.little);
-                              var barometerValue = ByteData.view(barometerBytes.buffer).getInt32(0, Endian.little) * 0.00002952998015649;
-                              var pressureBytes = Uint8List.fromList(snapshot.data![1]);
-                              var pressureData = ByteData.view(pressureBytes.buffer).getInt32(0, Endian.little);
-                              var pressureValue = (pressureData - barometerData).toDouble() * 0.00040146303904694;
-                              var temperatureBytes = Uint8List.fromList(snapshot.data![4]);
-                              var temperatureValue = ByteData.view(temperatureBytes.buffer).getInt16(0, Endian.little);
-                              var flowBytes = Uint8List.fromList(snapshot.data![3]);
-                              var flowData = ByteData.view(flowBytes.buffer).getInt32(0, Endian.little);
-                              // var flowValue = ((flowData * (1545 / 28.964) * ((((temperatureValue / 100) * 9 / 5) + 32) + 460)) /
-                              //         (144 * (pressureData * 0.00002952998015649))) /
-                              //     60;
-                              var flowValue = flowData / 100;
-
-                              // print('//bytes');
-                              // print(pressureBytes);
-                              // print(barometerBytes);
-                              // print(flowBytes);
-                              // print(numberValue);
-                              //1012376
-                              //1084960
-                              //TODO udregning
-                              // numbervalue - BarometerValue * in/H20
-                              //TODO !!! Flow bliver udreget ved hjælp af temperatur og pressure??
-                              return Column(
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Column(
-                                        children: [
-                                          Text(
-                                            dfTime.format(date),
-                                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                          ),
-                                          Text(
-                                            dfDate.format(date),
-                                            style: const TextStyle(fontSize: 11, color: Colors.white60),
-                                          ),
-                                        ],
-                                      ),
-                                      const Padding(
-                                        padding: EdgeInsets.all(8.0),
-                                        child: Icon(Icons.menu, color: Colors.grey),
-                                      ),
-                                      Column(
-                                        children: [
-                                          Text(
-                                            '${(((temperatureValue / 100) * 9 / 5) + 32).toStringAsFixed(2)}°',
-                                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                          ),
-                                          const Text(
-                                            'Farenheit',
-                                            style: TextStyle(fontSize: 11, color: Colors.white60),
-                                          ),
-                                        ],
-                                      )
-                                    ],
-                                  ),
-                                  // MyDropdownButton(selectTypeListProvider: selectTypeListProvider),
-                                  MyDropdownButton(selectTypeListProvider: context.read<SelectTypeListProvider>()),
-                                  const SizedBox(height: 20),
-                                  Consumer<SelectTypeListProvider>(
-                                    builder: (context, value, child) {
-                                      if (value.indexSelected == 0) {
-                                        return DetailGaugeDial(
-                                          value: flowValue,
-                                          isPressure: false,
-                                          title: 'Flow',
-                                          messureUnit: 'CFH',
-                                        );
-                                      } else {
-                                        return Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            DetailGaugeDial(
-                                              value: pressureValue,
-                                              // value: (((pressureValue - barometerValue).toDouble() * 0.00040146303904694)),
-                                              isPressure: true,
-                                              title: 'Pressure',
-                                              messureUnit: 'inH2O',
-                                            ),
-                                            const SizedBox(width: 20),
-                                            DetailGaugeDial(
-                                              value: barometerValue,
-                                              isPressure: true,
-                                              title: 'Barometer',
-                                              messureUnit: 'inHg',
-                                              start2: 25,
-                                              start3: 35,
-                                              end: 60,
-                                            ),
-                                          ],
-                                        );
-                                      }
-                                    },
-                                  ),
-                                  const Divider(),
-                                  MyChart(flowValue: flowValue, pressureValue: pressureValue),
-                                ],
-                              );
-                            } else if (snapshot.hasError) {
-                              // TODO: do something with the error
-                              return SizedBox(height: 250, width: 250, child: Text(snapshot.error.toString()));
-                            }
-                            // TODO: the data is not ready, show a loading indicator
-                            return const SizedBox(height: 250, width: 250, child: Center(child: CircularProgressIndicator()));
-                          }),
+                        ),
+                      ),
                     ),
-                    // ElevatedButton(
-                    //     onPressed: () {
-                    //       Navigator.push(
-                    //           context,
-                    //           MaterialPageRoute(
-                    //               builder: (context) => DataTestingPage(
-                    //                   dataService: dataService!,
-                    //                   timeService: timeService!,
-                    //                   pressureCharacteristic: pressureCharacteristic!,
-                    //                   flowCharacteristic: flowCharacteristic!,
-                    //                   timeCharacteristic: timeCharacteristic!)));
-                    //     },
-                    //     child: const Text('   Data Testing   ')),
-                  ],
-                ),
-              ));
+              widget.myGroup.flowDeviceIds[1].isEmpty
+                  ? Expanded(child: NoDeviceAdded(title: 'Add Flow Meter', icon: const Icon(Icons.gas_meter_rounded), onPressed: () => addDevice(1)))
+                  : Expanded(
+                      child: SingleFloPro(
+                        myGroup: widget.myGroup,
+                        streams: CombineLatestStream.list([
+                          timeCharacteristic!.value,
+                          pressureCharacteristic!.value,
+                          barometerCharacteristic!.value,
+                          flowCharacteristic!.value,
+                          temperatureCharacteristic!.value,
+                        ]),
+                      ),
+                    ),
+            ],
+          );
         },
       ),
     );
@@ -419,6 +307,259 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
 
   Future<dynamic> goToPage(Widget route, String settingsName) async {
     return Navigator.push(context, MaterialPageRoute(builder: (context) => route, settings: RouteSettings(name: settingsName)));
+  }
+}
+
+class SingleFloPro extends StatefulWidget {
+  final MyGroup myGroup;
+  final CombineLatestStream<dynamic, List<List<int>>> streams;
+  const SingleFloPro({Key? key, required this.streams, required this.myGroup}) : super(key: key);
+
+  @override
+  _SingleFloProState createState() => _SingleFloProState();
+}
+
+class _SingleFloProState extends State<SingleFloPro> {
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // ElevatedButton(
+          //     onPressed: () {
+          //       selectTypeListProvider.updatetest();
+          //     },
+          //     child: Text('s')),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: StreamBuilder<List<List<int>>>(
+                // stream: pressureCharacteristic?.value,
+                stream: widget.streams,
+                builder: (context, streamSnapshot) {
+                  if (streamSnapshot.hasData) {
+                    if (streamSnapshot.data?[0].length != 10 ||
+                        streamSnapshot.data?[1].length != 4 ||
+                        streamSnapshot.data?[2].length != 4 ||
+                        streamSnapshot.data?[3].length != 4 ||
+                        streamSnapshot.data?[4].length != 2) {
+                      return const SizedBox(height: 150, width: 150, child: Center(child: CircularProgressIndicator()));
+                      // return const SizedBox(height: 250, width: 250, child: Center(child: Text('No data')));
+                    }
+                    var timeBytes = Uint8List.fromList(streamSnapshot.data![0]);
+                    var yearValue = ByteData.view(timeBytes.buffer).getInt16(0, Endian.little);
+                    DateTime date = DateTime(yearValue, timeBytes[2], timeBytes[3], timeBytes[4], timeBytes[5], timeBytes[6]);
+                    var dfTime = DateFormat('HH:mm');
+                    var dfDate = DateFormat('dd/MM/yyyy');
+
+                    var barometerBytes = Uint8List.fromList(streamSnapshot.data![2]);
+                    var barometerData = ByteData.view(barometerBytes.buffer).getInt32(0, Endian.little);
+                    // var barometerValue = ByteData.view(barometerBytes.buffer).getInt32(0, Endian.little) * 0.00002952998015649;
+                    var pressureBytes = Uint8List.fromList(streamSnapshot.data![1]);
+                    var pressureData = ByteData.view(pressureBytes.buffer).getInt32(0, Endian.little);
+                    var pressureValue = (pressureData - barometerData).toDouble() * 0.00040146303904694;
+                    var temperatureBytes = Uint8List.fromList(streamSnapshot.data![4]);
+                    var temperatureValue = ByteData.view(temperatureBytes.buffer).getInt16(0, Endian.little);
+                    var flowBytes = Uint8List.fromList(streamSnapshot.data![3]);
+                    var flowData = ByteData.view(flowBytes.buffer).getInt32(0, Endian.little);
+                    // var flowValue = ((flowData * (1545 / 28.964) * ((((temperatureValue / 100) * 9 / 5) + 32) + 460)) /
+                    //         (144 * (pressureData * 0.00002952998015649))) /
+                    //     60;
+                    var flowValue = flowData / 100;
+
+                    // print('//bytes');
+                    // print(pressureBytes);
+                    // print(barometerBytes);
+                    // print(flowBytes);
+                    // print(numberValue);
+                    //1012376
+                    //1084960
+                    //TODO udregning
+                    // numbervalue - BarometerValue * in/H20
+                    //TODO !!! Flow bliver udreget ved hjælp af temperatur og pressure??
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                children: [
+                                  Text(
+                                    dfTime.format(date),
+                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    dfDate.format(date),
+                                    style: const TextStyle(fontSize: 11, color: Colors.white60),
+                                  ),
+                                ],
+                              ),
+                              // const Padding(
+                              //   padding: EdgeInsets.all(8.0),
+                              //   child: Icon(Icons.menu, color: Colors.grey),
+                              // ),
+                              Column(
+                                children: [
+                                  Text(
+                                    widget.myGroup.temperatureUnit == TemperatureUnit.celsius
+                                        ? '${(temperatureValue / 100).toStringAsFixed(2)}°'
+                                        : '${celsiusToFahrenheit(temperatureValue / 100).toStringAsFixed(2)}°',
+                                    // '${(((temperatureValue / 100) * 9 / 5) + 32).toStringAsFixed(2)}°',
+                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    '${widget.myGroup.temperatureUnit.name[0].toUpperCase()}${widget.myGroup.temperatureUnit.name.substring(1)}',
+                                    style: const TextStyle(fontSize: 11, color: Colors.white60),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                        // MyDropdownButton(selectTypeListProvider: selectTypeListProvider),
+                        // MyDropdownButton(selectTypeListProvider: context.read<SelectTypeListProvider>()),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            DetailGaugeDial(
+                              value: flowValue,
+                              isPressure: false,
+                              title: 'Flow',
+                              messureUnit: 'CFH',
+                            ),
+                            DetailGaugeDial(
+                              value: pressureValue,
+                              // value: (((pressureValue - barometerValue).toDouble() * 0.00040146303904694)),
+                              isPressure: true,
+                              title: 'Pressure',
+                              messureUnit: 'inH2O',
+                            ),
+                          ],
+                        ),
+                        // Consumer<SelectTypeListProvider>(
+                        //   builder: (context, value, child) {
+                        //     if (value.indexSelected == 0) {
+                        //       return DetailGaugeDial(
+                        //         value: flowValue,
+                        //         isPressure: false,
+                        //         title: 'Flow',
+                        //         messureUnit: 'CFH',
+                        //       );
+                        //     } else {
+                        //       return Row(
+                        //         mainAxisAlignment: MainAxisAlignment.center,
+                        //         children: [
+                        //           DetailGaugeDial(
+                        //             value: pressureValue,
+                        //             // value: (((pressureValue - barometerValue).toDouble() * 0.00040146303904694)),
+                        //             isPressure: true,
+                        //             title: 'Pressure',
+                        //             messureUnit: 'inH2O',
+                        //           ),
+                        //           const SizedBox(width: 20),
+                        //           DetailGaugeDial(
+                        //             value: barometerValue,
+                        //             isPressure: true,
+                        //             title: 'Barometer',
+                        //             messureUnit: 'inHg',
+                        //             start2: 25,
+                        //             start3: 35,
+                        //             end: 60,
+                        //           ),
+                        //         ],
+                        //       );
+                        //     }
+                        //   },
+                        // ),
+                        const Divider(height: 1),
+
+                        Column(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text('Flow', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            ),
+                            MySingleChart(value: flowValue),
+                          ],
+                        ),
+                        const Divider(height: 1),
+
+                        Column(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text('Pressure', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            ),
+                            MySingleChart(value: pressureValue),
+                          ],
+                        ),
+                        // MySingleChart(value: pressureValue),
+                        // MyChart(flowValue: flowValue, pressureValue: pressureValue),
+                        // MyChart(flowValue: flowValue, pressureValue: pressureValue),
+                      ],
+                    );
+                  } else if (streamSnapshot.hasError) {
+                    // TODO: do something with the error
+                    return SizedBox(height: 250, width: 250, child: Text(streamSnapshot.error.toString()));
+                  }
+                  // TODO: the data is not ready, show a loading indicator
+                  return const SizedBox(height: 250, width: 250, child: Center(child: CircularProgressIndicator()));
+                }),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class NoDeviceAdded extends StatelessWidget {
+  final String title;
+  final Icon icon;
+
+  final void Function() onPressed;
+  const NoDeviceAdded({
+    Key? key,
+    required this.title,
+    required this.icon,
+    required this.onPressed,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // if (isEnergyMeter) {
+    //   icon = Icons.electric_bolt_rounded;
+    //   title = 'Add Energy Meter';
+    // } else {
+    //   icon = Icons.gas_meter;
+    //   title = 'Add Flow Meter';
+    // }
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          icon.icon,
+          size: 120,
+          color: Colors.grey,
+        ),
+        // Padding(
+        //   padding: const EdgeInsets.all(8.0),
+        //   child: Text(
+        //     title,
+        //     // style: TextStyle(color: Colors.grey),
+        //   ),
+        // ),
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: ElevatedButton(onPressed: onPressed, child: Text(title)),
+        ),
+        const SizedBox(height: kToolbarHeight),
+      ],
+    );
   }
 }
 
@@ -455,7 +596,7 @@ class DetailGaugeDial extends StatelessWidget {
     }
     return SizedBox(
       height: 165,
-      width: 140,
+      width: 125,
       child: Column(
         children: [
           Stack(
@@ -604,9 +745,9 @@ class DetailGaugeDial extends StatelessWidget {
 class GaugeAnootation extends StatelessWidget {
   final double valueRange;
   final double interval;
-  GaugeAnootation({Key? key, required this.valueRange, this.interval = 10}) : super(key: key);
+  const GaugeAnootation({Key? key, required this.valueRange, this.interval = 10}) : super(key: key);
 
-  double radius = 50.0;
+  final double radius = 45.0;
 
   List<Widget> list() {
     List<int> data = [];
@@ -635,7 +776,7 @@ class GaugeAnootation extends StatelessWidget {
             },
             child: Text(
               '${index * 10}',
-              style: TextStyle(fontSize: 8, color: Colors.grey),
+              style: const TextStyle(fontSize: 8, color: Colors.grey),
             ),
           )),
     );
@@ -647,4 +788,8 @@ class GaugeAnootation extends StatelessWidget {
       children: list(),
     );
   }
+}
+
+double celsiusToFahrenheit(double celsuis) {
+  return (celsuis * 9 / 5) + 32;
 }

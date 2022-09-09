@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:sejerslev_demo/logic/file_handler.dart';
+import 'package:sejerslev_demo/logic/group_handler.dart';
+import 'package:sejerslev_demo/widgets/my_scrollview_w_constraints.dart';
 
 import '../model/my_group.dart';
 import '../model/providers/loading_provider.dart';
@@ -13,8 +15,9 @@ import '../model/providers/type_with_notify.dart';
 import '../widgets/my_alert_dialog.dart';
 
 class AddDevicePage extends StatefulWidget {
+  final int index;
   final MyGroup myGroup;
-  const AddDevicePage({Key? key, required this.myGroup}) : super(key: key);
+  const AddDevicePage({Key? key, required this.myGroup, required this.index}) : super(key: key);
 
   @override
   State<AddDevicePage> createState() => _AddDevicePageState();
@@ -23,7 +26,8 @@ class AddDevicePage extends StatefulWidget {
 class _AddDevicePageState extends State<AddDevicePage> {
   FlutterBluePlus flutterBlue = FlutterBluePlus.instance;
   Timer? _timer;
-  FileHandler _fileHandler = FileHandler();
+  final FileHandler _fileHandler = FileHandler();
+  final GroupHandler _groupHandler = GroupHandler();
 
   Future<void> _findPrinters() async {
     // Start scanning
@@ -39,6 +43,7 @@ class _AddDevicePageState extends State<AddDevicePage> {
 
   @override
   void dispose() {
+    flutterBlue.stopScan();
     _timer?.cancel();
     super.dispose();
   }
@@ -49,19 +54,6 @@ class _AddDevicePageState extends State<AddDevicePage> {
       boolsWithNotify.setValue(0, false);
     });
     // Future.delayed(const Duration(seconds: 4), () => boolsWithNotify.setValue(0, false));
-  }
-
-  Future<void> addDeviceToGroup(String deviceId) async {
-    String jsonString = await _fileHandler.readFile(JsonFileName.groupsJsonFile);
-
-    List<dynamic> jsonData = jsonDecode(jsonString);
-    List<MyGroup> groups = jsonData.map<MyGroup>((e) => MyGroup.fromJson(e)).toList();
-
-    int groupIndex = groups.indexWhere((element) => element.id == widget.myGroup.id);
-    if (groupIndex != -1 && !groups[groupIndex].deviceIds.contains(deviceId)) {
-      groups[groupIndex].deviceIds.add(deviceId);
-      await _fileHandler.writeFile(JsonFileName.groupsJsonFile, jsonEncode(groups));
-    }
   }
 
   @override
@@ -114,7 +106,7 @@ class _AddDevicePageState extends State<AddDevicePage> {
           ),
           body: Stack(
             children: [
-              SingleChildScrollView(
+              MyConstrainedView(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
@@ -124,15 +116,12 @@ class _AddDevicePageState extends State<AddDevicePage> {
                         builder: (context, connectedSnapshot) {
                           if (connectedSnapshot.hasData) {
                             if (connectedSnapshot.data!.isEmpty) {
-                              return Center(
-                                child: Text('data'),
-                              );
-                              // return SizedBox.shrink();
+                              return const SizedBox.shrink();
                             } else {
                               return Column(
                                 children: [
                                   const Padding(
-                                    padding: EdgeInsets.all(20.0),
+                                    padding: EdgeInsets.all(10.0),
                                     child: Text('Select from connected devices',
                                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white60)),
                                   ),
@@ -144,7 +133,7 @@ class _AddDevicePageState extends State<AddDevicePage> {
                                             title: connectedSnapshot.data![i].name,
                                             subtitle: connectedSnapshot.data![i].id.id,
                                             onPressed: () {
-                                              addDeviceToGroup(connectedSnapshot.data![i].id.id);
+                                              _groupHandler.addFlowDeviceToGroup(connectedSnapshot.data![i].id.id, widget.myGroup.id, widget.index);
                                               showMyDialog(
                                                 context,
                                                 'Device Added',
@@ -217,13 +206,14 @@ class _AddDevicePageState extends State<AddDevicePage> {
                                       children: [
                                         const Padding(
                                           padding: EdgeInsets.all(20.0),
-                                          child: Text('Select a bluetooth device',
+                                          child: Text('Bluetooth devices nearby',
                                               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white60)),
                                         ),
                                         scanResults.isEmpty
-                                            ? const Center(child: Text('Ingen enheder fundet.'))
+                                            ? const Center(child: Text('No devices found.'))
                                             : ListView.builder(
                                                 shrinkWrap: true,
+                                                itemCount: scanResults.length,
                                                 physics: const NeverScrollableScrollPhysics(),
                                                 itemBuilder: (context, index) {
                                                   return DeviceConnectCard(
@@ -290,7 +280,8 @@ class _AddDevicePageState extends State<AddDevicePage> {
                                                       if (mounted) {
                                                         Navigator.pop(context);
                                                         if (returnValue ?? false) {
-                                                          addDeviceToGroup(scanResults[index].device.id.id);
+                                                          _groupHandler.addFlowDeviceToGroup(
+                                                              scanResults[index].device.id.id, widget.myGroup.id, widget.index);
                                                           showMyDialog(
                                                             context,
                                                             dialogTitle,
@@ -349,7 +340,6 @@ class _AddDevicePageState extends State<AddDevicePage> {
                                                   //   ),
                                                   // );
                                                 },
-                                                itemCount: scanResults.length,
                                               ),
                                       ],
                                     );

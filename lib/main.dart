@@ -1,4 +1,4 @@
-import '/pages/connected_bt_devices.dart';
+import 'pages/group_list_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'model/providers/loading_provider.dart';
@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
           brightness: Brightness.dark,
           primarySwatch: Colors.blue,
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
             elevation: 0,
             centerTitle: true,
           ),
+          popupMenuTheme: PopupMenuThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
           cardTheme: CardTheme(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ButtonStyle(
