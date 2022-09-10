@@ -171,7 +171,7 @@ class _MySingleChartState extends State<MySingleChart> {
     // return 10 * (80 / 100);
     double difference = maxY - minY;
     double interval;
-    if (maxY == minY) return 1;
+    // if (maxY == minY) return 0.1;
 
     if (difference < 0.5) {
       interval = 0.1;
