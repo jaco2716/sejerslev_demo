@@ -48,15 +48,21 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 
-	<key>NSBluetoothAlwaysUsageDescription</key>  
-	<string>Need BLE permission</string>  
+	
 	<key>NSBluetoothPeripheralUsageDescription</key>  
-	<string>Need BLE permission</string>  
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>  
-	<string>Need Location permission</string>  
+	<string>Bluetooth is required for some features</string>
 	<key>NSLocationAlwaysUsageDescription</key>  
-	<string>Need Location permission</string>  
-	<key>NSLocationWhenInUseUsageDescription</key>  
-	<string>Need Location permission</string>
+	<string>Location is required for some features</string>
+
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Location is required for some features</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Location is required for some features</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Location is required for some features</string>
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Bluetooth is required for some features</string>
+    <key>NSLocationUsageDescription</key>
+    <string>Location is required for some features</string>
 </dict>
 </plist>

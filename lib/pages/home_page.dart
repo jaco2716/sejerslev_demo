@@ -1,413 +1,375 @@
-// import 'dart:async';
-// import 'package:flowprotest/select_bt_device.dart';
-// import 'package:flutter/material.dart';
-// import 'package:gauges/gauges.dart';
+import 'dart:convert';
 
-// class MyHomePage extends StatefulWidget {
-//   // final List<BluetoothService> services;
+import 'package:gauges/gauges.dart';
+import 'package:sejerslev_demo/logic/auth_app_state.dart';
+import 'package:sejerslev_demo/logic/file_handler.dart';
+import 'package:sejerslev_demo/model/my_group.dart';
+import 'package:sejerslev_demo/pages/create_group_page.dart';
+import 'package:sejerslev_demo/widgets/my_alert_dialog.dart';
 
-//   const MyHomePage({Key? key}) : super(key: key);
+import '../widgets/my_scrollview_w_constraints.dart';
+import '/model/providers/loading_provider.dart';
+import 'scan_bt_devices.dart';
+import 'single_group_page.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:provider/provider.dart';
 
-//   @override
-//   State<MyHomePage> createState() => _MyHomePageState();
-// }
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
-// class _MyHomePageState extends State<MyHomePage> {
-//   List<int> values = [30, 40, 50, 60, 70, 80];
-//   List<String> valueTitles = [
-//     'Primary',
-//     'Secoundary',
-//     'Basement',
-//     '1st floor',
-//     'Roof',
-//     'Rig',
-//   ];
-//   List<String> valueSubtitles = [
-//     'The primary reader',
-//     'The secoundary reader',
-//     'The basement reader',
-//     'The 1st floor reader',
-//     'The roof reader',
-//     'The rig reader'
-//   ];
-//   Timer? _timer;
-//   // void startTimer() async {
-//   //   Random rand = Random();
-//   //   _timer = Timer.periodic(
-//   //     const Duration(seconds: 1),
-//   //     (Timer timer) {
-//   //       setState(() {
-//   //         for (var i = 0; i < values.length; i++) {
-//   //           if (values[i] < 5) {
-//   //             values[i] += rand.nextInt(15);
-//   //           } else if (values[i] > 95) {
-//   //             values[i] -= rand.nextInt(15);
-//   //           } else {
-//   //             values[i] += rand.nextInt(10) - 5;
-//   //           }
-//   //         }
-//   //       });
-//   //     },
-//   //   );
-//   // }
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
 
-//   @override
-//   void initState() {
-//     // startTimer();
-//     super.initState();
-//   }
+class _HomePageState extends State<HomePage> {
+  // final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
+  final FileHandler _fileHandler = FileHandler();
 
-//   @override
-//   void dispose() {
-//     _timer?.cancel();
-//     super.dispose();
-//   }
+  Future<List<MyGroup>> _getGroups() async {
+    String jsonString = await _fileHandler.readFile(JsonFileName.groupsJsonFile);
+    if (jsonString.isEmpty) {
+      return [];
+    } else {
+      List<dynamic> jsonData = jsonDecode(jsonString);
+      List<MyGroup> groups = jsonData.map<MyGroup>((e) => MyGroup.fromJson(e)).toList();
+      return groups;
+    }
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       // floatingActionButton: FloatingActionButton(
-//       //   onPressed: () {},
-//       //   backgroundColor: Colors.blue,
-//       //   foregroundColor: Colors.white,
-//       //   child: const Icon(Icons.add),
-//       // ),
-//       // appBar: AppBar(
-//       // leadingWidth: 100,
-//       // leading: Container(
-//       //   margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
-//       //   child: Image.asset(
-//       //     'assets/logo/logo_light.png',
-//       //   ),
-//       // ),
-//       // title: Container(
-//       //   height: 60,
-//       //   margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
-//       //   child: Image.asset(
-//       //     'assets/logo/logo_light.png',
-//       //   ),
-//       // ),
-//       //Text(widget.title),
-//       // ),
-//       body: SingleChildScrollView(
-//         child: Padding(
-//           padding: const EdgeInsets.all(10),
-//           child: Column(
-//             children: [
-//               const SizedBox(
-//                 height: kToolbarHeight,
-//               ),
-//               SizedBox(
-//                 height: 80,
-//                 child: Image.asset(
-//                   'assets/logo/logo_light.png',
-//                 ),
-//               ),
-//               const SizedBox(
-//                 height: 10,
-//                 width: double.infinity,
-//               ),
-//               // Padding(
-//               //   padding: const EdgeInsets.symmetric(horizontal: 4),
-//               //   child: Row(
-//               //     children: [
-//               //       const Expanded(child: SizedBox()),
-//               //       const SizedBox(width: 5),
-//               //       // Container(
-//               //       //   padding: const EdgeInsets.all(6),
-//               //       //   width: 80,
-//               //       //   child: const Center(child: Text('Pressure')),
-//               //       // ),
-//               //       // Container(
-//               //       //   padding: const EdgeInsets.all(6),
-//               //       //   width: 80,
-//               //       //   child: const Center(child: Text('Usage')),
-//               //       // ),
-//               //     ],
-//               //   ),
-//               // ),
-//               const Text(
-//                 'Connect to a bluetooth unit',
-//                 style: TextStyle(color: Colors.white38, fontSize: 16),
-//               ),
-//               const SelectBtDevice(),
-//               // ListView.builder(
-//               //   padding: EdgeInsets.zero,
-//               //   shrinkWrap: true,
-//               //   physics: const NeverScrollableScrollPhysics(),
-//               //   itemCount: values.length,
-//               //   itemBuilder: (BuildContext context, int index) {
-//               //     // isThreeLine: true,
-//               //     // title: Text('Cool name'),
-//               //     // subtitle: Text('Subtitle name'),
-//               //     // leading: Icon(Icons.water_drop),
-//               //     return Card(
-//               //       child: InkWell(
-//               //         onTap: () {
-//               //           // Navigator.push(
-//               //           //   context,
-//               //           //   MaterialPageRoute(
-//               //           //     builder: (context) => SingleReaderPage(
-//               //           //       title: valueTitles[index],
-//               //           //       services: widget.services,
-//               //           //     ),
-//               //           //   ),
-//               //           // );
-//               //         },
-//               //         child: Row(
-//               //           mainAxisSize: MainAxisSize.min,
-//               //           children: [
-//               //             Padding(
-//               //               padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 25),
-//               //               child: Icon(valueTitles[index].length > 7 ? Icons.join_inner : Icons.webhook_outlined),
-//               //             ),
-//               //             Expanded(
-//               //               child: Column(
-//               //                 crossAxisAlignment: CrossAxisAlignment.start,
-//               //                 children: [
-//               //                   Text(
-//               //                     valueTitles[index],
-//               //                     style: const TextStyle(fontWeight: FontWeight.bold),
-//               //                   ),
-//               //                   Text(
-//               //                     valueSubtitles[index],
-//               //                     style: const TextStyle(color: Colors.white54),
-//               //                   ),
-//               //                 ],
-//               //               ),
-//               //             ),
-//               //             const SizedBox(width: 5),
-//               //             // Card(
-//               //             //   color: Colors.blue,
-//               //             //   child: Padding(
-//               //             //     padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 20),
-//               //             //     child: Text('Connect'),
-//               //             //   ),
-//               //             // )
-//               //             const Icon(
-//               //               Icons.link,
-//               //               color: Colors.blue,
-//               //             ),
-//               //             const SizedBox(width: 20),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+            onPressed: () {
+              showMyDialog(context, 'Menu',
+                  cancelText: 'Close',
+                  widgetContent: Column(
+                    children: [
+                      const Text('Do you wish to log out?'),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                            onPressed: () {
+                              context.read<AuthAppState>().logOutUser(() {
+                                Navigator.pop(context);
+                              }, (message) {
+                                showMyDialog(context, 'Error', message: message);
+                              });
+                            },
+                            child: const Text('Log out')),
+                      )
+                    ],
+                  ));
+            },
+            icon: const Icon(Icons.menu)),
+        toolbarHeight: 110,
+        // elevation: 1,
+        backgroundColor: Colors.grey[900],
+        title: SizedBox(
+          height: 80,
+          child: Image.asset('assets/logo/logo_light.png'),
+        ),
+        // title: SizedBox(
+        //   width: double.infinity,
+        //   child: Align(alignment: Alignment.centerRight, child: Text('Add group')),
+        // ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SizedBox(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: () => goToPageWithSetState(const CreateGroupPage(), 'CreateGroupPage'),
+                child: Row(
+                  children: const [
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        'Add',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ),
+                    CircleAvatar(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      child: Icon(Icons.add),
+                    ),
+                    // SizedBox(width: 50),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {},
+      //   child: IconButton(
+      //     icon: Icon(Icons.add),
+      //     onPressed: () {},
+      //   ),
+      // ),
+      body: MyConstrainedView(
+        withScroll: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      'All Groups',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.more_horiz),
+                    onPressed: () {},
+                  )
+                  // TextButton(onPressed: () {}, child: Text('...', style: Textst,))
+                ],
+              ),
+              // ElevatedButton(
+              //     onPressed: () {
+              //       // context.read<BoolsWithNotify>().setValue(0, true);
+              //       Navigator.push(
+              //           context,
+              //           MaterialPageRoute(
+              //             builder: (context) => const ScanBtDevices(),
+              //           )).then((value) {
+              //         context.read<LoadingProvider>().setLoading(false);
 
-//               //             // Container(
-//               //             //     padding: const EdgeInsets.all(6),
-//               //             //     width: 80,
-//               //             //     height: 80,
-//               //             //     child: SingleGaugeDial(value: values[index].toDouble(), isPressure: true)),
-//               //             // Container(
-//               //             //     padding: const EdgeInsets.all(6),
-//               //             //     width: 80,
-//               //             //     height: 80,
-//               //             //     child: SingleGaugeDial(value: values[index].toDouble(), isPressure: false)),
-//               //           ],
-//               //         ),
-//               //       ),
-//               //     );
-//               //   },
-//               // ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
+              //         setState(() {});
+              //       });
+              //     },
+              //     child: const Text('Connect Devices')),
+              Expanded(
+                child: FutureBuilder<List<MyGroup>>(
+                    future: _getGroups(),
+                    // FutureBuilder<List<BluetoothDevice>>(
+                    //     future: flutterBlue.connectedDevices,
+                    builder: (context, snapshot) {
+                      // print('Devices: ${snapshot.data?.map((e) => e.name)}');
+                      if (snapshot.hasData) {
+                        if (snapshot.data!.isEmpty) {
+                          return SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                const SizedBox(width: double.infinity, height: 20),
+                                const Icon(
+                                  Icons.widgets_rounded,
+                                  size: 140,
+                                  color: Colors.grey,
+                                ),
+                                const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'No groups',
+                                    // style: TextStyle(color: Colors.grey),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: ElevatedButton(
+                                      onPressed: () => goToPageWithSetState(const CreateGroupPage(), 'CreateGroupPage'),
+                                      child: const Text('Add Group')),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else {
+                          return ListView.builder(
+                              // shrinkWrap: true,
+                              itemCount: snapshot.data!.length,
+                              itemBuilder: (context, i) {
+                                // print('${snapshot.data![i].name}');
+                                return Card(
+                                  // color: Colors.blue,
+                                  clipBehavior: Clip.hardEdge,
+                                  child: InkWell(
+                                    onTap: () => goToPageWithSetState(SingleGroupPage(groupId: snapshot.data![i].id), 'SingleGroupPage'),
+                                    // onTap: () => goToDeviceServices(snapshot.data![i]),
+                                    child: Row(
+                                      children: [
+                                        const SizedBox(width: 16),
+                                        Icon(
+                                          snapshot.data![i].groupCategory == GroupCategory.indoor ? Icons.house_rounded : Icons.cloud,
+                                          size: 25,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                            child: Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                snapshot.data![i].title,
+                                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                              ),
+                                              Text(
+                                                snapshot.data![i].description,
+                                                style: const TextStyle(fontSize: 12, color: Colors.white70),
+                                              ),
+                                              // Row(
+                                              //   children: [
+                                              //     Icon(Icons.ice_skating_rounded),
+                                              //     Icon(Icons.settings),
+                                              //     Icon(Icons.settings),
+                                              //   ],
+                                              // )
+                                              // Text(
+                                              //   snapshot.data![i].name,
+                                              //   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                              // ),
+                                              // Text(
+                                              //   snapshot.data![i].id.id,
+                                              //   style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                              // ),
+                                            ],
+                                          ),
+                                        )),
+                                        // const Icon(Icons.insert_chart_outlined_rounded, color: Colors.blue),
+                                        const SizedBox(width: 10),
+                                        const Padding(
+                                          padding: EdgeInsets.all(2.0),
+                                          child: CircleAvatar(
+                                              radius: 14,
+                                              backgroundColor: Colors.black,
+                                              foregroundColor: Colors.white,
+                                              child: Padding(
+                                                padding: EdgeInsets.all(5.0),
+                                                child: FittedBox(child: Icon(Icons.electric_bolt_rounded)),
+                                              )),
+                                        ),
+                                        const MiniGauge(),
+                                        const MiniGauge(),
+                                        // IconButton(
+                                        //   onPressed: () async {},
+                                        //   icon: const Icon(Icons.insert_chart_outlined_rounded),
+                                        //   color: Colors.blue,
+                                        // ),
+                                        // IconButton(
+                                        //   onPressed: () async {
+                                        //     List<BluetoothService> services = await snapshot.data![i].discoverServices();
+                                        //     if (mounted) {
+                                        //       Navigator.push(context, MaterialPageRoute(builder: (context) => DeviceServicesPage(services: services)));
+                                        //     }
+                                        //   },
+                                        //   icon: const Icon(Icons.settings),
+                                        //   color: Colors.blue,
+                                        // ),
+                                        // IconButton(
+                                        //   onPressed: () async {},
+                                        //   icon: const Icon(Icons.settings),
+                                        //   // color: Colors.red,
+                                        // ),
+                                        // IconButton(
+                                        //   onPressed: () async {
+                                        //     await snapshot.data![i].disconnect();
+                                        //     await Future.delayed(const Duration(milliseconds: 100));
+                                        //     setState(() {});
+                                        //   },
+                                        //   icon: const Icon(Icons.link_off),
+                                        //   color: Colors.red,
+                                        // ),
+                                        const SizedBox(width: 16),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              });
+                        }
+                      } else {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                    }),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-// class SingleGaugeDial extends StatelessWidget {
-//   final double value;
-//   final bool isPressure;
-//   const SingleGaugeDial({Key? key, required this.value, required this.isPressure}) : super(key: key);
+  Future<dynamic> goToPageWithSetState(Widget route, String settingsName) async {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => route, settings: RouteSettings(name: settingsName))).then((value) {
+      setState(() {});
+    });
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     Color color1, color2, color3;
-//     double start1, start2, start3, end;
-//     if (isPressure) {
-//       start1 = 0;
-//       start2 = 40;
-//       start3 = 60;
-//       end = 100;
-//       color1 = Colors.white;
-//       color2 = Colors.green;
-//       color3 = Colors.blue;
-//     } else {
-//       start1 = 0;
-//       start2 = 25;
-//       start3 = 75;
-//       end = 100;
-//       color1 = Colors.green;
-//       color2 = Colors.orange;
-//       color3 = Colors.red;
-//     }
-//     return RadialGauge(
-//       axes: [
-//         RadialGaugeAxis(
-//           minValue: 0,
-//           maxValue: 300,
-//           minAngle: -150,
-//           maxAngle: 150,
-//           radius: 0.9,
-//           width: 0.1,
-//           color: Colors.transparent,
-//           pointers: [
-//             RadialNeedlePointer(
-//                 value: value, thicknessStart: 4, thicknessEnd: 0, length: 0.7, knobRadiusAbsolute: 3, color: Colors.white, knobColor: Colors.white)
-//           ],
-//           ticks: [
-//             RadialTicks(interval: 20, alignment: RadialTickAxisAlignment.inside, color: Colors.white, length: 0.17, children: [
-//               RadialTicks(
-//                 // interval: 50,
-//                 ticksInBetween: 5,
-//                 length: 0.13,
-//                 color: Colors.grey,
-//               ),
-//             ]),
-//           ],
-//           segments: [
-//             RadialGaugeSegment(
-//               minValue: 0,
-//               maxValue: 100,
-//               minAngle: -150,
-//               maxAngle: -50,
-//               color: color1,
-//             ),
-//             RadialGaugeSegment(
-//               minValue: 100,
-//               maxValue: 200,
-//               minAngle: -50,
-//               maxAngle: 50,
-//               color: color2,
-//             ),
-//             RadialGaugeSegment(
-//               minValue: 200,
-//               maxValue: 300,
-//               minAngle: 50,
-//               maxAngle: 150,
-//               color: color3,
-//             ),
-//           ],
-//         ),
-//       ],
-//     );
-//     // return SfRadialGauge(
-//     //   axes: <RadialAxis>[
-//     //     RadialAxis(
-//     //       minimum: 0,
-//     //       maximum: 100,
-//     //       showLabels: false,
-//     //       ranges: <GaugeRange>[
-//     //         GaugeRange(startValue: start1, endValue: start2, color: color1),
-//     //         GaugeRange(startValue: start2, endValue: start3, color: color2),
-//     //         GaugeRange(startValue: start3, endValue: end, color: color3)
-//     //       ],
-//     //       pointers: <GaugePointer>[
-//     //         NeedlePointer(
-//     //           knobStyle: const KnobStyle(knobRadius: 0.1, borderWidth: 20),
-//     //           // tailStyle: const TailStyle(width: 1, length: 0.2),
-//     //           needleLength: 0.7,
-//     //           needleStartWidth: 0.5,
-//     //           needleEndWidth: 2,
-//     //           animationDuration: 1000,
-//     //           animationType: AnimationType.ease,
-//     //           enableAnimation: true,
-//     //           value: value,
-//     //         )
-//     //       ],
-//     //       // annotations: <GaugeAnnotation>[
-//     //       //   GaugeAnnotation(
-//     //       //     widget: Text('$value', style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold)),
-//     //       //     angle: 90,
-//     //       //     positionFactor: 0.5,
-//     //       //   )
-//     //       // ],
-//     //     )
-//     //   ],
-//     // );
-//   }
-// }
+  // goToDeviceServices(BluetoothDevice device) async {
+  //   // showMyDialog(context, '', '', widgetContent: const Center(child: CircularProgressIndicator()));
+  //   showDialog(context: context, builder: (context) => const Center(child: CircularProgressIndicator()));
+  //   List<BluetoothService> services = await device.discoverServices();
+  //   if (mounted) {
+  //     Navigator.pop(context);
+  //     Navigator.push(context, MaterialPageRoute(builder: (context) => SingleReaderPage(title: device.name, services: services)));
+  //   }
+  // }
+}
 
-//           // child: Column(
-//           //   crossAxisAlignment: CrossAxisAlignment.start,
-//           //   // mainAxisAlignment: MainAxisAlignment.center,
-//           //   children: <Widget>[
-//           //     Row(
-//           //       children: [
-//           //         const SizedBox(width: 20),
-//           //         Expanded(
-//           //           flex: 2,
-//           //           child: Image.asset('assets/logo/logo_light.png'),
-//           //         ),
-//           //         Expanded(
-//           //           flex: 3,
-//           //           child: Padding(
-//           //             // padding: const EdgeInsets.all(8.0),
-//           //             padding: const EdgeInsets.all(10),
-//           //             child: Container(
-//           //               // height: 150,
-//           //               child: Card(
-//           //                 // color: Colors.red,
-//           //                 child: Padding(
-//           //                   padding: const EdgeInsets.all(8.0),
-//           //                   child: Column(
-//           //                     crossAxisAlignment: CrossAxisAlignment.center,
-//           //                     children: [
-//           //                       GridView.builder(
-//           //                         padding: EdgeInsets.zero,
-//           //                         shrinkWrap: true,
-//           //                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-//           //                           crossAxisCount: 3,
-//           //                         ),
-//           //                         itemCount: values.length,
-//           //                         itemBuilder: (BuildContext context, int index) {
-//           //                           return Card(
-//           //                             color: Colors.black,
-//           //                             child: IconButton(
-//           //                               icon: const Icon(Icons.power_settings_new),
-//           //                               onPressed: () {},
-//           //                             ),
-//           //                           );
-//           //                         },
-//           //                       ),
-//           //                     ],
-//           //                   ),
-//           //                 ),
-//           //               ),
-//           //             ),
-//           //           ),
-//           //         )
-//           //       ],
-//           //     ),
-//           //     const SizedBox(height: 20),
-//           //     const Text(
-//           //       'Gas forbrug',
-//           //       style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-//           //     ),
-//           //     const Divider(thickness: 2),
-//           //     GridView.builder(
-//           //       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-//           //         crossAxisCount: 3,
-//           //       ),
-//           //       shrinkWrap: true,
-//           //       itemCount: values.length,
-//           //       itemBuilder: (BuildContext context, int index) {
-//           //         return Stack(
-//           //           alignment: Alignment.center,
-//           //           children: [
-//           //             Align(
-//           //               alignment: Alignment.topLeft,
-//           //               child: CircleAvatar(
-//           //                 backgroundColor: Colors.blue,
-//           //                 foregroundColor: Colors.white,
-//           //                 child: Text('${index + 1}'),
-//           //               ),
-//           //             ),
-//           //             SingleGaugeDial(
-//           //               value: values[index].toDouble(),
-//           //             )
-//           //           ],
-//           //         );
-//           //       },
-//           //     ),
-//           //   ],
-//           // ),
+class MiniGauge extends StatelessWidget {
+  const MiniGauge({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(5),
+      height: 32,
+      width: 32,
+      child: RadialGauge(
+        axes: [
+          RadialGaugeAxis(
+            minValue: 0,
+            maxValue: 10,
+            width: 0.4,
+            color: Colors.transparent,
+            pointers: [
+              RadialNeedlePointer(
+                value: 5,
+                thicknessStart: 4,
+                thicknessEnd: 1,
+                length: 1,
+                knobRadiusAbsolute: 2,
+                color: Colors.white,
+                knobColor: Colors.white,
+              )
+            ],
+            segments: const [
+              RadialGaugeSegment(
+                minValue: 0,
+                maxValue: 0,
+                minAngle: -150,
+                maxAngle: -50,
+                color: Colors.white,
+              ),
+              RadialGaugeSegment(
+                minValue: 0,
+                maxValue: 0,
+                minAngle: -50,
+                maxAngle: 50,
+                color: Colors.blue,
+              ),
+              RadialGaugeSegment(
+                minValue: 0,
+                maxValue: 0,
+                minAngle: 50,
+                maxAngle: 150,
+                color: Colors.green,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

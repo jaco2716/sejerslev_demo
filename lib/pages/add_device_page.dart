@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -8,16 +6,14 @@ import 'package:provider/provider.dart';
 import 'package:sejerslev_demo/logic/file_handler.dart';
 import 'package:sejerslev_demo/logic/group_handler.dart';
 import 'package:sejerslev_demo/widgets/my_scrollview_w_constraints.dart';
-
-import '../model/my_group.dart';
 import '../model/providers/loading_provider.dart';
 import '../model/providers/type_with_notify.dart';
 import '../widgets/my_alert_dialog.dart';
 
 class AddDevicePage extends StatefulWidget {
   final int index;
-  final MyGroup myGroup;
-  const AddDevicePage({Key? key, required this.myGroup, required this.index}) : super(key: key);
+  final int groupId;
+  const AddDevicePage({Key? key, required this.groupId, required this.index}) : super(key: key);
 
   @override
   State<AddDevicePage> createState() => _AddDevicePageState();
@@ -133,11 +129,11 @@ class _AddDevicePageState extends State<AddDevicePage> {
                                             title: connectedSnapshot.data![i].name,
                                             subtitle: connectedSnapshot.data![i].id.id,
                                             onPressed: () {
-                                              _groupHandler.addFlowDeviceToGroup(connectedSnapshot.data![i].id.id, widget.myGroup.id, widget.index);
+                                              _groupHandler.addFlowDeviceToGroup(connectedSnapshot.data![i].id.id, widget.groupId, widget.index);
                                               showMyDialog(
                                                 context,
                                                 'Device Added',
-                                                'The device has been added to the group.',
+                                                message: 'The device has been added to the group.',
                                               ).then((value) => Navigator.pop(context, connectedSnapshot.data![i].id.id));
                                             });
                                         // return Card(
@@ -224,7 +220,7 @@ class _AddDevicePageState extends State<AddDevicePage> {
                                                         showMyDialog(
                                                           context,
                                                           'Device Incompatible',
-                                                          'Please choose a FloPro device.',
+                                                          message: 'Please choose a FloPro device.',
                                                         );
                                                         return;
                                                       }
@@ -233,7 +229,7 @@ class _AddDevicePageState extends State<AddDevicePage> {
                                                         showMyDialog(
                                                           context,
                                                           'Failed',
-                                                          'Device is already connected.',
+                                                          message: 'Device is already connected.',
                                                         );
                                                         return;
                                                       }
@@ -281,11 +277,11 @@ class _AddDevicePageState extends State<AddDevicePage> {
                                                         Navigator.pop(context);
                                                         if (returnValue ?? false) {
                                                           _groupHandler.addFlowDeviceToGroup(
-                                                              scanResults[index].device.id.id, widget.myGroup.id, widget.index);
+                                                              scanResults[index].device.id.id, widget.groupId, widget.index);
                                                           showMyDialog(
                                                             context,
                                                             dialogTitle,
-                                                            dialogMessage,
+                                                            message: dialogMessage,
                                                             // infoDialog: false,
                                                             // onlyAction: true,
                                                             // myOnPressed: () =>
@@ -295,7 +291,7 @@ class _AddDevicePageState extends State<AddDevicePage> {
                                                           showMyDialog(
                                                             context,
                                                             dialogTitle,
-                                                            dialogMessage,
+                                                            message: dialogMessage,
                                                           );
                                                         }
                                                       }

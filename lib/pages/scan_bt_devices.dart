@@ -129,7 +129,7 @@ class _ScanBtDevicesState extends State<ScanBtDevices> {
                                               showMyDialog(
                                                 context,
                                                 'Already Connected',
-                                                'Device is already connected.',
+                                                message: 'Device is already connected.',
                                               );
                                             }
                                           }
@@ -137,7 +137,7 @@ class _ScanBtDevicesState extends State<ScanBtDevices> {
                                             showMyDialog(
                                               context,
                                               returnValue! ? 'Success' : 'Error',
-                                              returnValue! ? 'Connection to device made!' : 'Timeout occured, try again.',
+                                              message: returnValue! ? 'Connection to device made!' : 'Timeout occured, try again.',
                                               infoDialog: !returnValue!,
                                               onlyAction: returnValue!,
                                               myOnPressed: () => Navigator.popUntil(context, (route) => route.isFirst),

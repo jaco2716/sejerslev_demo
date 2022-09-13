@@ -1,4 +1,8 @@
-import 'pages/group_list_page.dart';
+import 'package:sejerslev_demo/logic/auth_app_state.dart';
+import 'package:sejerslev_demo/pages/authentication/check_login_page.dart';
+
+import 'logic/tuya_handler.dart';
+import 'pages/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'model/providers/loading_provider.dart';
@@ -10,6 +14,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider<LoadingProvider>(create: (context) => LoadingProvider()),
+        ChangeNotifierProvider<AuthAppState>(create: (context) => AuthAppState()),
       ],
       child: const MyApp(),
     ),
@@ -46,7 +51,7 @@ class MyApp extends StatelessWidget {
           ),
           floatingActionButtonTheme: const FloatingActionButtonThemeData(backgroundColor: Colors.blue, foregroundColor: Colors.white)),
       // home: const MyHomePage(),
-      home: const GroupListPage(),
+      home: const CheckLoginPage(),
     );
   }
 }

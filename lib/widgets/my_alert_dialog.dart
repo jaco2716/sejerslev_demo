@@ -3,20 +3,21 @@ import '../res/constants.dart';
 
 class MyAlertDialog extends StatelessWidget {
   final String title;
-  final String message;
+  final String? message;
   final String? cancelText;
   final String? confirmText;
   final void Function()? myOnPressed;
   final bool infoDialog;
   final bool onlyAction;
   final Color? confirmColor;
+  final Color? cancelColor;
 
   final Widget? widgetContent;
 
   const MyAlertDialog({
     Key? key,
     required this.title,
-    required this.message,
+    this.message,
     this.cancelText,
     this.confirmText,
     this.myOnPressed,
@@ -24,6 +25,7 @@ class MyAlertDialog extends StatelessWidget {
     this.onlyAction = false,
     this.widgetContent,
     this.confirmColor = Colors.blue,
+    this.cancelColor = Colors.blue,
   }) : super(key: key);
 
   final TextStyle _titleText = const TextStyle(fontSize: 22, fontWeight: FontWeight.bold);
@@ -53,7 +55,7 @@ class MyAlertDialog extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10.0),
         child: widgetContent ??
             Text(
-              message,
+              message ?? '',
               textAlign: TextAlign.center,
             ),
       ),
@@ -128,8 +130,8 @@ class MyLoadingDialog extends StatelessWidget {
 
 Future<T?> showMyDialog<T>(
   BuildContext context,
-  String title,
-  String message, {
+  String title, {
+  String? message,
   String? cancelText,
   String? confirmText,
   void Function()? myOnPressed,
@@ -139,6 +141,7 @@ Future<T?> showMyDialog<T>(
   BuildContext? specificContext,
   bool barrierDismissible = true,
   Color? confirmColor,
+  Color? cancelColor,
 }) {
   return showDialog<T>(
     barrierDismissible: barrierDismissible,

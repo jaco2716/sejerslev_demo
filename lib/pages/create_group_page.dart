@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sejerslev_demo/logic/file_handler.dart';
+import 'package:sejerslev_demo/logic/tuya_handler.dart';
 import 'package:sejerslev_demo/model/my_group.dart';
 import 'package:sejerslev_demo/widgets/my_scrollview_w_constraints.dart';
 
@@ -23,6 +24,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   final ValidateValues _validateValues = ValidateValues();
   final FileHandler _fileHandler = FileHandler();
   final _formKey = GlobalKey<FormState>();
+  final TuyaHandler _tuyaHandler = TuyaHandler();
 
   String? _title;
   String? _description;
@@ -69,7 +71,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                         setValue: (value) => _description = value,
                         validate: (value) => null,
                       ),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       Consumer<SelectTypeListProvider>(builder: (context, value, child) {
                         return SizedBox(
                             width: double.infinity,
@@ -77,22 +79,22 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                 onPressed: () async {
                                   if (_formKey.currentState!.validate()) {
                                     _formKey.currentState!.save();
-                                    var leading = value.indexSelected == 0 ? GroupCategory.indoor : GroupCategory.outdoor;
-                                    int groupId = DateTime.now().millisecondsSinceEpoch;
-                                    var newGroup = MyGroup(id: groupId, title: _title!, description: _description ?? '', groupCategory: leading);
-                                    List<MyGroup> grouplist = [
-                                      newGroup,
-                                      newGroup,
-                                      newGroup,
-                                    ];
-                                    // await _fileHandler.writeFile(JsonFileName.groupsJsonFile, '');
-                                    await _fileHandler.addObjectToJsonListFile(JsonFileName.groupsJsonFile, jsonEncode(newGroup));
-                                    if (mounted) {
-                                      Navigator.pop(context);
-                                    }
+
+                                    _tuyaHandler.addHome(_title!, "geoName", "roomName", 0, 0, (homeId) async {
+                                      var leading = value.indexSelected == 0 ? GroupCategory.indoor : GroupCategory.outdoor;
+
+                                      var newGroup = MyGroup(id: homeId, title: _title!, description: _description ?? '', groupCategory: leading);
+                                      // await _fileHandler.writeFile(JsonFileName.groupsJsonFile, '');
+                                      await _fileHandler.addObjectToJsonListFile(JsonFileName.groupsJsonFile, jsonEncode(newGroup));
+                                      if (mounted) {
+                                        Navigator.pop(context);
+                                      }
+                                    }, (message) {
+                                      showMyDialog(context, 'Error', message: message);
+                                    });
                                   }
                                 },
-                                child: Text('Create Group')));
+                                child: const Text('Create Group')));
                       }),
                     ],
                   ),

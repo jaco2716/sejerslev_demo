@@ -61,6 +61,7 @@ class _MySingleChartState extends State<MySingleChart> {
 
     minY = chartValues.reduce((curr, next) => curr.y < next.y ? curr : next).y;
     maxY = chartValues.reduce((curr, next) => curr.y > next.y ? curr : next).y;
+
     // minY =
     //     chartValues.reduce((curr, next) => curr.y < next.y ? curr : next).y;
     // maxY =
@@ -125,7 +126,7 @@ class _MySingleChartState extends State<MySingleChart> {
                         // interval: (maxY.ceil() + 1) / 4,
                         interval: calculateInterval(maxY, minY),
                         getTitlesWidget: leftTitleWidgets,
-                        reservedSize: 32,
+                        reservedSize: 40,
                       ),
                     ),
                   ),
@@ -133,11 +134,12 @@ class _MySingleChartState extends State<MySingleChart> {
                   minX: chartValues.first.x,
                   maxX: chartValues.first.x + 60, //60 secounds of data
                   // minY = min - difference from max to min divided by 10, with .5 margin
-                  minY: minY - ((maxY - minY) / 10 + .5),
+                  minY: maxY >= 1000 ? minY - ((maxY - minY) / 10 + 50) : minY - ((maxY - minY) / 10 + .5),
                   // minX = min + difference from max to min divided by 10, with .5 margin
-                  maxY: maxY + ((maxY - minY) / 10 + .5),
+                  maxY: maxY >= 1000 ? maxY + ((maxY - minY) / 10 + 50) : maxY + ((maxY - minY) / 10 + .5),
                   lineBarsData: [
                     LineChartBarData(
+                      curveSmoothness: 0,
                       spots: chartValues,
                       isCurved: true,
                       gradient: LinearGradient(
@@ -168,12 +170,22 @@ class _MySingleChartState extends State<MySingleChart> {
   }
 
   double calculateInterval(double maxY, double minY) {
-    // return 10 * (80 / 100);
     double difference = maxY - minY;
     double interval;
-    // if (maxY == minY) return 0.1;
-
-    if (difference < 0.5) {
+    if (maxY >= 1000) {
+      difference = difference / 1000;
+      if (difference < 0.5) {
+        interval = 10;
+      } else if (difference < 1) {
+        interval = 20;
+      } else if (difference < 2) {
+        interval = 50;
+      } else if (difference < 30) {
+        interval = (5 * ((difference) / 50).ceil()).toDouble();
+      } else {
+        interval = (50 * ((difference) / 500).ceil()).toDouble();
+      }
+    } else if (difference < 0.5) {
       interval = 0.1;
     } else if (difference < 1) {
       interval = 0.2;
@@ -181,44 +193,9 @@ class _MySingleChartState extends State<MySingleChart> {
       interval = 0.4;
     } else if (difference < 30) {
       interval = (0.5 * ((difference) / 5).ceil()).toDouble();
-      // interval = 0.5;
-      // } else if (difference < 10) {
-      //   // interval = ( ((difference) / 10).ceil()).toDouble();
-
-      //   // interval = 1;
-      // } else if (difference < 15) {
-      //   interval = 1.5;
-      // } else if (difference < 20) {
-      //   // interval = (((difference) / 8)).toDouble();
-      //   interval = 2;
-      // } else if (difference < 25) {
-      //   interval = 2.5;
-      // } else if (difference < 30) {
-      //   interval = 3;
     } else {
-      // interval = (((difference) / 10).ceil()).toDouble();
       interval = (5 * ((difference) / 50).round()).toDouble();
     }
-
-    // if (difference < 0.5) {
-    //   interval = 0.1;
-    // } else if (difference < 1) {
-    //   interval = 0.2;
-    // } else if (difference < 3) {
-    //   interval = 0.5;
-    // } else if (difference < 5) {
-    //   interval = 1;
-    // } else if (difference < 10) {
-    //   interval = 1.2;
-    // } else if (difference < 15) {
-    //   interval = 1.7;
-    // } else if (difference < 20) {
-    //   interval = 2;
-    // } else if (difference < 50) {
-    //   interval = 10;
-    // } else {
-    //   interval = (10 * ((difference) / 50).ceil()).toDouble();
-    // }
     return interval;
   }
 
@@ -226,34 +203,56 @@ class _MySingleChartState extends State<MySingleChart> {
     if (meta.max == value || meta.min == value) {
       return const Text('');
     }
-    const style = TextStyle(
-      color: Colors.white70,
-      fontWeight: FontWeight.w500,
-      fontSize: 11,
-    );
-    String text = value.toStringAsFixed(1);
-    String intText = value.toInt().toString();
-    var remain = value - value.floor();
-    if (remain > 0) {
-      return Padding(
-        padding: const EdgeInsets.all(4.0),
-        child: Text(
-          text,
-          textAlign: TextAlign.right,
-          style: const TextStyle(
-            fontSize: 10,
-            color: Colors.white54,
-          ),
-        ),
-      );
+    String suffix = '';
+    int decimals = 1;
+    double newValue = value;
+    if ((value >= 1000 && value < 10000) || (value <= -1000 && value > -10000)) {
+      newValue = value / 1000;
+      suffix = 'K';
+      decimals = 2;
+    } else if ((value >= 10000 && value < 100000) || (value <= -10000 && value > -100000)) {
+      newValue = value / 1000;
+      suffix = 'K';
+      decimals = 1;
+    } else if ((value >= 100000 && value < 1000000) || (value <= -100000 && value > -1000000)) {
+      newValue = value / 1000;
+      suffix = 'K';
+      decimals = 0;
+    } else if ((value >= 1000000) || (value <= -1000000)) {
+      newValue = value / 1000000;
+      suffix = 'M';
+      decimals = 2;
     }
+
+    var style = const TextStyle();
+    var remain = newValue - newValue.floor();
+    String text = '';
+    if (remain > 0) {
+      text = '${newValue.toStringAsFixed(decimals)}$suffix';
+      style = const TextStyle(
+        fontSize: 10,
+        color: Colors.white54,
+      );
+    } else {
+      if (meta.max >= 1000 && value < 1000) {
+        text = '${newValue.toInt().toString()}$suffix';
+        style = const TextStyle(
+          fontSize: 10,
+          color: Colors.white54,
+        );
+      } else {
+        text = '${newValue.toInt().toString()}$suffix';
+        style = const TextStyle(
+          color: Colors.white70,
+          fontWeight: FontWeight.w500,
+          fontSize: 10,
+        );
+      }
+    }
+
     return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: Text(
-        intText,
-        style: style,
-        textAlign: TextAlign.right,
-      ),
+      padding: const EdgeInsets.only(right: 4.0),
+      child: Text(text, textAlign: TextAlign.right, style: style),
     );
   }
 }
