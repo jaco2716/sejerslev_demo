@@ -1,17 +1,17 @@
 import 'dart:typed_data';
-import '../device_test_page.dart';
+import '../../device_test_page.dart';
 import '/logic/group_handler.dart';
 import '/logic/tuya_handler.dart';
 import '/logic/validate_values.dart';
 import '/model/my_group.dart';
 import '/pages/add_device_page.dart';
-import '/pages/group_settings_page.dart';
+import 'group_settings_page.dart';
 import '/widgets/my_alert_dialog.dart';
 import '/widgets/my_count_down.dart';
 import '/widgets/my_text_field.dart';
-import '../widgets/icon_with_ation.dart';
-import '../widgets/single_energy_device.dart';
-import '../widgets/single_flopro.dart';
+import '../../widgets/icon_with_ation.dart';
+import '../../widgets/single_energy_device.dart';
+import '../../widgets/single_flopro.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
@@ -56,6 +56,7 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
   List<List<int>> dateData = [];
   bool isNotifying = true;
   List<BluetoothDevice> devices = [];
+  List<String> connectedBtDeviceIds = [];
 
   MyGroup? group;
 
@@ -67,11 +68,13 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
   Future<Map<String, List<BluetoothService>>> getBTDeviceServices() async {
     Map<String, List<BluetoothService>> devicesServies = {};
     devices = await _flutterBlue.connectedDevices;
+    connectedBtDeviceIds.clear();
     await updateGroup();
     for (var device in devices) {
       if (group?.flowDeviceIds.contains(device.id.id) ?? false) {
         var tempService = await device.discoverServices();
         devicesServies[device.id.id] = tempService;
+        connectedBtDeviceIds.add(device.id.id);
       }
     }
     return devicesServies;
@@ -212,6 +215,8 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
           if (!snapshot.hasData || group == null) {
             return const Center(child: CircularProgressIndicator());
           }
+          print('GROUP-flowdevices--------\n ${group!.flowDeviceIds}\n-------');
+          print('connected-flowdevices--------\n ${connectedBtDeviceIds}\n-------');
 
           return Row(
             children: [
@@ -229,54 +234,56 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
                         deviceId: group!.energyDeviceIds[0],
                       ),
                     )),
-              !snapshot.data!
-                  ? Expanded(child: IconWithAction(buttonTitle: 'Add Flow Meter', icon: const Icon(Icons.air), onPressed: () => addDevice(0)))
-                  : group!.flowDeviceIds[0].isEmpty
-                      ? Expanded(child: IconWithAction(buttonTitle: 'Add Flow Meter', icon: const Icon(Icons.air), onPressed: () => addDevice(0)))
-                      : Expanded(
-                          child: Card(
-                            color: Colors.grey[850],
-                            elevation: 30,
-                            child: SingleFloPro(
-                              myGroup: group!,
-                              streams: [
-                                characteristics[group!.flowDeviceIds[0]]?[CharacteristicName.time]?.value,
-                                characteristics[group!.flowDeviceIds[0]]?[CharacteristicName.pressure]?.value,
-                                characteristics[group!.flowDeviceIds[0]]?[CharacteristicName.barometer]?.value,
-                                characteristics[group!.flowDeviceIds[0]]?[CharacteristicName.flow]?.value,
-                                characteristics[group!.flowDeviceIds[0]]?[CharacteristicName.temperature]?.value,
-                                // timeCharacteristic?.value,
-                                // pressureCharacteristic?.value,
-                                // barometerCharacteristic?.value,
-                                // flowCharacteristic?.value,
-                                // temperatureCharacteristic?.value,
-                              ],
-                            ),
-                          ),
+              // !snapshot.data!
+              !connectedBtDeviceIds.contains(group!.flowDeviceIds[0])
+                  ? Expanded(child: IconWithAction(buttonTitle: 'Add Flow Meter', icon: const Icon(Icons.air_rounded), onPressed: () => addDevice(0)))
+                  : Expanded(
+                      child: Card(
+                        color: Colors.grey[850],
+                        elevation: 30,
+                        child: SingleFloPro(
+                          myGroup: group!,
+                          title: devices.firstWhere((element) => element.id.id == group!.flowDeviceIds[0]).name,
+                          onConnectPressed: () => addDevice(0),
+                          streams: [
+                            characteristics[group!.flowDeviceIds[0]]?[CharacteristicName.time]?.value,
+                            characteristics[group!.flowDeviceIds[0]]?[CharacteristicName.pressure]?.value,
+                            characteristics[group!.flowDeviceIds[0]]?[CharacteristicName.barometer]?.value,
+                            characteristics[group!.flowDeviceIds[0]]?[CharacteristicName.flow]?.value,
+                            characteristics[group!.flowDeviceIds[0]]?[CharacteristicName.temperature]?.value,
+                            // timeCharacteristic?.value,
+                            // pressureCharacteristic?.value,
+                            // barometerCharacteristic?.value,
+                            // flowCharacteristic?.value,
+                            // temperatureCharacteristic?.value,
+                          ],
                         ),
-              !snapshot.data!
-                  ? Expanded(child: IconWithAction(buttonTitle: 'Add Flow Meter', icon: const Icon(Icons.air), onPressed: () => addDevice(1)))
-                  : group!.flowDeviceIds[1].isEmpty
-                      ? Expanded(child: IconWithAction(buttonTitle: 'Add Flow Meter', icon: const Icon(Icons.air), onPressed: () => addDevice(1)))
-                      : Expanded(
-                          child: SingleFloPro(
-                            myGroup: group!,
-                            streams: [
-                              characteristics[group!.flowDeviceIds[1]]?[CharacteristicName.time]?.value,
-                              characteristics[group!.flowDeviceIds[1]]?[CharacteristicName.pressure]?.value,
-                              characteristics[group!.flowDeviceIds[1]]?[CharacteristicName.barometer]?.value,
-                              characteristics[group!.flowDeviceIds[1]]?[CharacteristicName.flow]?.value,
-                              characteristics[group!.flowDeviceIds[1]]?[CharacteristicName.temperature]?.value,
-                            ],
-                            // streams: CombineLatestStream.list([
-                            //   timeCharacteristic?.value,
-                            //   pressureCharacteristic!.value,
-                            //   barometerCharacteristic!.value,
-                            //   flowCharacteristic!.value,
-                            //   temperatureCharacteristic!.value,
-                            // ]),
-                          ),
-                        ),
+                      ),
+                    ),
+              // !snapshot.data!
+              !connectedBtDeviceIds.contains(group!.flowDeviceIds[1])
+                  ? Expanded(child: IconWithAction(buttonTitle: 'Add Flow Meter', icon: const Icon(Icons.air_rounded), onPressed: () => addDevice(1)))
+                  : Expanded(
+                      child: SingleFloPro(
+                        myGroup: group!,
+                        title: devices.firstWhere((element) => element.id.id == group!.flowDeviceIds[1]).name,
+                        onConnectPressed: () => addDevice(1),
+                        streams: [
+                          characteristics[group!.flowDeviceIds[1]]?[CharacteristicName.time]?.value,
+                          characteristics[group!.flowDeviceIds[1]]?[CharacteristicName.pressure]?.value,
+                          characteristics[group!.flowDeviceIds[1]]?[CharacteristicName.barometer]?.value,
+                          characteristics[group!.flowDeviceIds[1]]?[CharacteristicName.flow]?.value,
+                          characteristics[group!.flowDeviceIds[1]]?[CharacteristicName.temperature]?.value,
+                        ],
+                        // streams: CombineLatestStream.list([
+                        //   timeCharacteristic?.value,
+                        //   pressureCharacteristic!.value,
+                        //   barometerCharacteristic!.value,
+                        //   flowCharacteristic!.value,
+                        //   temperatureCharacteristic!.value,
+                        // ]),
+                      ),
+                    ),
             ],
           );
         },

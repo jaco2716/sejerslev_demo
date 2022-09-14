@@ -75,26 +75,9 @@ class MyTextFieldWidget extends StatelessWidget {
               alignLabelWithHint: true,
               errorStyle: const TextStyle(fontSize: 10, height: 0.2),
               prefixIcon: icon,
-              // suffixIcon: fillRequired
-              //     ? SizedBox(
-              //         height: 42,
-              //         width: 12,
-              //         child: Align(
-              //           alignment: Alignment.topRight,
-              //           child: Padding(
-              //             padding: const EdgeInsets.only(right: 8.0),
-              //             child: Icon(
-              //               Icons.circle,
-              //               color: Colors.red[900],
-              //               size: 8,
-              //             ),
-              //           ),
-              //         ),
-              //       )
-              //     : null,
               suffixIconConstraints: const BoxConstraints(maxWidth: 12),
               isDense: true,
-              border: const OutlineInputBorder(borderSide: BorderSide.none),
+              // border: OutlineInputBorder(borderSide: BorderSide.none),
               hintText: hintText,
             ),
             autofillHints: autofillHints,

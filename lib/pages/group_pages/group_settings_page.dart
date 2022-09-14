@@ -4,12 +4,13 @@ import 'package:sejerslev_demo/logic/group_handler.dart';
 import 'package:sejerslev_demo/model/my_group.dart';
 import 'package:sejerslev_demo/model/providers/select_type_provider.dart';
 import 'package:sejerslev_demo/pages/add_device_page.dart';
-import 'package:sejerslev_demo/pages/single_group_page.dart';
+import 'package:sejerslev_demo/pages/group_pages/single_group_page.dart';
 import 'package:sejerslev_demo/widgets/my_alert_dialog.dart';
 import 'package:sejerslev_demo/widgets/my_dropdown_button.dart';
 import 'package:sejerslev_demo/widgets/my_scrollview_w_constraints.dart';
+import 'package:sejerslev_demo/widgets/my_text_field.dart';
 
-import '../logic/tuya_handler.dart';
+import '../../logic/tuya_handler.dart';
 
 class GroupSettingsPage extends StatefulWidget {
   final int groupId;
@@ -23,6 +24,9 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
   final FlutterBluePlus _flutterBlue = FlutterBluePlus.instance;
   final GroupHandler _groupHandler = GroupHandler();
   final TuyaHandler _tuyaHandler = TuyaHandler();
+
+  String fileType = 'xlsx';
+  String exportDeviceType = 'Energy Usage';
 
   @override
   Widget build(BuildContext context) {
@@ -191,6 +195,7 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                       const Divider(),
                       Card(
                         child: ListTile(
+                          leading: const Icon(Icons.thermostat),
                           title: const Text('Temperature Unit'),
                           trailing: PopupMenuButton<TemperatureUnit>(
                             child: SizedBox(
@@ -234,22 +239,182 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                         ),
                       ),
                       Card(
+                        color: Colors.blue,
                         child: ListTile(
-                          onTap: () async {
-                            await _tuyaHandler.removeHome(group.id, () async {
-                              await _groupHandler.deleteGroup(group.id);
-                              if (mounted) {
-                                showMyDialog(context, 'Success', message: 'Group has been removed').then((value) {
+                          leading: const Icon(Icons.download),
+                          onTap: () {
+                            showMyDialog(
+                              context,
+                              'Export Data',
+                              infoDialog: false,
+                              confirmText: 'Export',
+                              widgetContent: SizedBox(
+                                child: Column(
+                                  children: [
+                                    const SizedBox(width: 300),
+                                    const Text('Choose device to export'),
+                                    Card(
+                                      child: SizedBox(
+                                        // width: 250,
+                                        height: 50,
+                                        child: StatefulBuilder(builder: (context, setModalState) {
+                                          return PopupMenuButton<String>(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                                              // width: 150,
+                                              // height: double.infinity,
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(exportDeviceType),
+                                                  const Icon(Icons.arrow_drop_down),
+                                                ],
+                                              ),
+                                            ),
+                                            onSelected: (value) {
+                                              setModalState(() {
+                                                exportDeviceType = value;
+                                              });
+                                            },
+                                            itemBuilder: (BuildContext context) {
+                                              return [
+                                                const PopupMenuItem<String>(
+                                                  value: 'Energy usage',
+                                                  child: Text('Energy Usage'),
+                                                ),
+                                                const PopupMenuItem<String>(
+                                                  value: 'Gas Usage 1',
+                                                  child: Text('Gas Usage 1'),
+                                                ),
+                                                const PopupMenuItem<String>(
+                                                  value: 'Gas Usage 2',
+                                                  child: Text('Gas Usage 2'),
+                                                ),
+                                              ];
+                                            },
+                                          );
+                                        }),
+                                      ),
+                                    ),
+                                    const Divider(),
+                                    const Text('Choose file format'),
+                                    Card(
+                                      child: SizedBox(
+                                        // width: 250,
+                                        height: 50,
+                                        child: StatefulBuilder(builder: (context, setModalState) {
+                                          return PopupMenuButton<String>(
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                                              // width: 150,
+                                              // height: double.infinity,
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Text(fileType),
+                                                  const Icon(Icons.arrow_drop_down),
+                                                ],
+                                              ),
+                                            ),
+                                            onSelected: (value) {
+                                              setModalState(() {
+                                                fileType = value;
+                                              });
+                                            },
+                                            itemBuilder: (BuildContext context) {
+                                              return [
+                                                const PopupMenuItem<String>(
+                                                  value: 'xlsx',
+                                                  child: Text('xlsx'),
+                                                ),
+                                                const PopupMenuItem<String>(
+                                                  value: 'xml',
+                                                  child: Text('xml'),
+                                                ),
+                                                const PopupMenuItem<String>(
+                                                  value: 'cvs',
+                                                  child: Text('cvs'),
+                                                ),
+                                              ];
+                                            },
+                                          );
+                                        }),
+                                      ),
+                                    ),
+                                    MyTextFieldWidget(
+                                      labelText: 'E-mail',
+                                      setValue: (_) {},
+                                      validate: (_) {},
+                                    )
+                                  ],
+                                ),
+                              ),
+                              myOnPressed: () {
+                                double loadingValue = 0;
+                                Navigator.pop(context);
+                                showMyDialog(context, 'Success',
+                                    widgetContent: Column(
+                                      children: [
+                                        const Text(
+                                          'File has been sent\nto your e-mail.',
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            Container(
+                                              width: 80,
+                                              height: 80,
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(50),
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            const Icon(
+                                              Icons.check_circle,
+                                              color: Colors.green,
+                                              size: 90,
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ));
+                              },
+                            );
+                          },
+                          title: const Text('Export data'),
+                        ),
+                      ),
+                      Card(
+                        color: Colors.red,
+                        child: ListTile(
+                          leading: const Icon(Icons.delete),
+                          onTap: () {
+                            showMyDialog(
+                              context,
+                              'Delete Group',
+                              message: 'Are you sure you want to delete group?',
+                              infoDialog: false,
+                              confirmText: 'Delete',
+                              confirmColor: Colors.red,
+                              myOnPressed: () async {
+                                await _tuyaHandler.removeHome(group.id, () async {
+                                  await _groupHandler.deleteGroup(group.id);
                                   if (mounted) {
-                                    Navigator.popUntil(context, (route) => route.isFirst);
+                                    showMyDialog(context, 'Success', message: 'Group has been removed').then((value) {
+                                      if (mounted) {
+                                        Navigator.popUntil(context, (route) => route.isFirst);
+                                      }
+                                    });
+                                  }
+                                }, (message) {
+                                  if (mounted) {
+                                    showMyDialog(context, 'Error', message: message);
                                   }
                                 });
-                              }
-                            }, (message) {
-                              if (mounted) {
-                                showMyDialog(context, 'Error', message: message);
-                              }
-                            });
+                              },
+                            );
                           },
                           title: const Text('Delete Group'),
                         ),
@@ -261,6 +426,12 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
             }),
       ),
     );
+  }
+
+  void incrementValue(double value, void Function(void Function()) setMyState) async {
+    await Future.delayed(const Duration(milliseconds: 30));
+    value++;
+    setMyState(() {});
   }
 
   Future<dynamic> goToAddDevicePage(Widget route, String settingsName, int index) async {

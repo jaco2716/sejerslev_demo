@@ -302,10 +302,12 @@ extension TuyaDeviceHandler: FlutterStreamHandler {
         self.eventSink = events
         guard let device = TuyaSmartDevice(deviceId: LocalDataHandler.currentDeviceId ?? "") else{
             print("Device Error: \(LocalDataHandler.currentDeviceId ?? "")")
+            events(nil)
             return nil
         }
         guard var data = device.deviceModel.dps else{
             print("Data error")
+            events(nil)
             return nil
         }
         

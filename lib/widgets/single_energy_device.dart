@@ -22,6 +22,8 @@ class SingleEnergyDevice extends StatefulWidget {
 class _SingleEnergyDeviceState extends State<SingleEnergyDevice> {
   final TuyaHandler _tuyaHandler = TuyaHandler();
   late Timer _timer;
+  StreamSubscription<Map<String, dynamic>>? deviceValueStream;
+
   bool isOnline = false;
   bool isOn = false;
   double curCurrent = 0;
@@ -46,7 +48,7 @@ class _SingleEnergyDeviceState extends State<SingleEnergyDevice> {
   }
 
   void setStreamValue() {
-    _tuyaHandler.deviceValueStream()?.listen((event) {
+    deviceValueStream = _tuyaHandler.deviceValueStream()?.listen((event) {
       print(event);
       isOnline = event["isOnline"] as bool? ?? false;
       isOn = event["1"] as bool? ?? false;
@@ -82,6 +84,7 @@ class _SingleEnergyDeviceState extends State<SingleEnergyDevice> {
   @override
   void dispose() {
     _timer.cancel();
+    deviceValueStream?.cancel();
     super.dispose();
   }
 
@@ -89,7 +92,7 @@ class _SingleEnergyDeviceState extends State<SingleEnergyDevice> {
   Widget build(BuildContext context) {
     if (!isOnline) {
       return const IconWithAction(
-        icon: Icon(Icons.wifi_off_outlined),
+        icon: Icon(Icons.wifi_off_rounded),
         title: 'Device is Offline',
       );
     }
@@ -139,7 +142,7 @@ class _SingleEnergyDeviceState extends State<SingleEnergyDevice> {
             title: 'Electicity',
             messureUnit: 'V',
             // start2: 20,
-            end: 20,
+            end: 500,
           ),
           // const SizedBox(height: 20),
           const Divider(height: 1),

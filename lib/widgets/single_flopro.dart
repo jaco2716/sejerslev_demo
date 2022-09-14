@@ -5,16 +5,24 @@ import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../model/my_group.dart';
-import '../pages/group_settings_page.dart';
+import '../pages/group_pages/group_settings_page.dart';
 import 'icon_with_ation.dart';
 import 'my_gauge.dart';
 import 'my_single_chart.dart';
 
 class SingleFloPro extends StatefulWidget {
   final MyGroup myGroup;
+  final String title;
+  final void Function() onConnectPressed;
   final List<Stream<List<int>>?> streams;
   // final CombineLatestStream<dynamic, List<List<int>>> streams;
-  const SingleFloPro({Key? key, required this.streams, required this.myGroup}) : super(key: key);
+  const SingleFloPro({
+    Key? key,
+    required this.streams,
+    required this.myGroup,
+    required this.onConnectPressed,
+    required this.title,
+  }) : super(key: key);
 
   @override
   _SingleFloProState createState() => _SingleFloProState();
@@ -25,12 +33,13 @@ class _SingleFloProState extends State<SingleFloPro> {
   Widget build(BuildContext context) {
     if (widget.streams.any((element) => element == null)) {
       return IconWithAction(
-        buttonTitle: 'Settings',
-        icon: const Icon(Icons.warning_amber_rounded),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => GroupSettingsPage(groupId: widget.myGroup.id)));
-        },
-        title: 'Could not get data from device.\nTry disconnecting and connecting again.',
+        buttonTitle: 'Connect Device',
+        icon: const Icon(Icons.wifi_off_rounded),
+        onPressed: widget.onConnectPressed,
+        // {
+        //   Navigator.push(context, MaterialPageRoute(builder: (context) => GroupSettingsPage(groupId: widget.myGroup.id)));
+        // },
+        title: 'Could not connect to device.',
       );
     }
     List<Stream<List<int>>> streams = widget.streams.map((element) => element!).toList();
@@ -107,6 +116,14 @@ class _SingleFloProState extends State<SingleFloPro> {
                           //   padding: EdgeInsets.all(8.0),
                           //   child: Icon(Icons.menu, color: Colors.grey),
                           // ),
+                          Container(
+                              padding: const EdgeInsets.all(10),
+                              // height: 30,
+
+                              child: Text(
+                                widget.title,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              )),
                           Column(
                             children: [
                               Text(

@@ -37,6 +37,9 @@ class MyApp extends StatelessWidget {
             elevation: 0,
             centerTitle: true,
           ),
+          inputDecorationTheme: InputDecorationTheme(
+            border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(10)),
+          ),
           popupMenuTheme: PopupMenuThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
           cardTheme: CardTheme(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
           elevatedButtonTheme: ElevatedButtonThemeData(

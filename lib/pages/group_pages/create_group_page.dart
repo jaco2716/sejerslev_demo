@@ -7,11 +7,11 @@ import 'package:sejerslev_demo/logic/tuya_handler.dart';
 import 'package:sejerslev_demo/model/my_group.dart';
 import 'package:sejerslev_demo/widgets/my_scrollview_w_constraints.dart';
 
-import '../logic/validate_values.dart';
-import '../model/providers/select_type_provider.dart';
-import '../widgets/my_alert_dialog.dart';
-import '../widgets/my_dropdown_button.dart';
-import '../widgets/my_text_field.dart';
+import '../../logic/validate_values.dart';
+import '../../model/providers/select_type_provider.dart';
+import '../../widgets/my_alert_dialog.dart';
+import '../../widgets/my_dropdown_button.dart';
+import '../../widgets/my_text_field.dart';
 
 class CreateGroupPage extends StatefulWidget {
   const CreateGroupPage({Key? key}) : super(key: key);

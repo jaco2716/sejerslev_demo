@@ -4,13 +4,13 @@ import 'package:gauges/gauges.dart';
 import 'package:sejerslev_demo/logic/auth_app_state.dart';
 import 'package:sejerslev_demo/logic/file_handler.dart';
 import 'package:sejerslev_demo/model/my_group.dart';
-import 'package:sejerslev_demo/pages/create_group_page.dart';
+import 'package:sejerslev_demo/pages/group_pages/create_group_page.dart';
 import 'package:sejerslev_demo/widgets/my_alert_dialog.dart';
 
 import '../widgets/my_scrollview_w_constraints.dart';
 import '/model/providers/loading_provider.dart';
 import 'scan_bt_devices.dart';
-import 'single_group_page.dart';
+import 'group_pages/single_group_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:provider/provider.dart';

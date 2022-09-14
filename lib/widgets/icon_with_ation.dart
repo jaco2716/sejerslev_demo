@@ -33,14 +33,16 @@ class IconWithAction extends StatelessWidget {
         ),
         title != null
             ? Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(4.0),
                 child: Text(
                   title!,
                   // style: TextStyle(color: Colors.grey),
                   textAlign: TextAlign.center,
                 ),
               )
-            : const SizedBox.shrink(),
+            : const SizedBox(
+                height: 25,
+              ),
         onPressed != null
             ? Padding(
                 padding: const EdgeInsets.all(20.0),
