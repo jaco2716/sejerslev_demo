@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:sejerslev_demo/device_test_page.dart';
 import 'package:sejerslev_demo/logic/tuya_handler.dart';
 import 'package:sejerslev_demo/widgets/icon_with_ation.dart';
 
@@ -139,7 +137,7 @@ class _SingleEnergyDeviceState extends State<SingleEnergyDevice> {
           DetailGaugeDial(
             value: curVoltage,
             isPressure: false,
-            title: 'Electicity',
+            title: 'Electricity',
             messureUnit: 'V',
             // start2: 20,
             end: 500,
@@ -148,27 +146,27 @@ class _SingleEnergyDeviceState extends State<SingleEnergyDevice> {
           const Divider(height: 1),
           const Padding(
             padding: EdgeInsets.all(8.0),
-            child: Text('Electicity - V - curVoltage', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: Text('Electricity - V - curVoltage', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
           MySingleChart(value: curVoltage),
           const Divider(height: 1),
           const Padding(
             padding: EdgeInsets.all(8.0),
-            child: Text('Total Electicity - KWh - totalEle', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: Text('Total Electricity - KWh - totalEle', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
           // MySingleChart(value: (dValueSnapshot.data?["20"] as int? ?? 0).toDouble()),
           MySingleChart(value: totalEle),
           const Divider(height: 1),
           const Padding(
             padding: EdgeInsets.all(8.0),
-            child: Text('Total Electicity - W - curPower', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: Text('Total Electricity - W - curPower', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
           // MySingleChart(value: (dValueSnapshot.data?["20"] as int? ?? 0).toDouble()),
           MySingleChart(value: curPower),
           const Divider(height: 1),
           const Padding(
             padding: EdgeInsets.all(8.0),
-            child: Text('Total Electicity - mA - curCurrent', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: Text('Total Electricity - mA - curCurrent', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
           // MySingleChart(value: (dValueSnapshot.data?["20"] as int? ?? 0).toDouble()),
           MySingleChart(value: curCurrent),
