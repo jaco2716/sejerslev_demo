@@ -1,11 +1,8 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
-
 import '../model/my_group.dart';
-import '../pages/group_pages/group_settings_page.dart';
 import 'icon_with_ation.dart';
 import 'my_gauge.dart';
 import 'my_single_chart.dart';
@@ -29,6 +26,30 @@ class SingleFloPro extends StatefulWidget {
 }
 
 class _SingleFloProState extends State<SingleFloPro> {
+  // Stream<List<List<int>>>? fakeStream;
+
+  // fakeStreamInit() {
+  //   fakeStream = Stream.periodic(
+  //     const Duration(seconds: 3),
+  //     (computationCount) {
+  //       return [
+  //         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  //         [0, 0, 0, 0],
+  //         [0, 0, 0, 0],
+  //         [0, 0, 0, 0],
+  //         [0, 0],
+  //       ];
+  //     },
+  //   );
+  // }
+
+  // @override
+  // void initState() {
+  //   fakeStreamInit();
+  //   // TODO: implement initState
+  //   super.initState();
+  // }
+
   @override
   Widget build(BuildContext context) {
     if (widget.streams.any((element) => element == null)) {
@@ -48,9 +69,8 @@ class _SingleFloProState extends State<SingleFloPro> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: StreamBuilder<List<List<int>>>(
-            // stream: pressureCharacteristic?.value,
             stream: CombineLatestStream.list(streams),
-            // stream: widget.streams,
+            // stream: fakeStream,
             builder: (context, streamSnapshot) {
               if (streamSnapshot.hasData) {
                 if (streamSnapshot.data?[0].length != 10 ||
@@ -72,7 +92,9 @@ class _SingleFloProState extends State<SingleFloPro> {
                 // var barometerValue = ByteData.view(barometerBytes.buffer).getInt32(0, Endian.little) * 0.00002952998015649;
                 var pressureBytes = Uint8List.fromList(streamSnapshot.data![1]);
                 var pressureData = ByteData.view(pressureBytes.buffer).getInt32(0, Endian.little);
-                var pressureValue = (pressureData - barometerData).toDouble() * 0.00040146303904694;
+                // Pressure  - inH2O
+                // var pressureValue = (pressureData - barometerData).toDouble() * 0.00040146303904694;
+                var pressureValue = (pressureData - barometerData).toDouble() / 1000000;
                 var temperatureBytes = Uint8List.fromList(streamSnapshot.data![4]);
                 var temperatureValue = ByteData.view(temperatureBytes.buffer).getInt16(0, Endian.little);
                 var flowBytes = Uint8List.fromList(streamSnapshot.data![3]);
@@ -80,7 +102,9 @@ class _SingleFloProState extends State<SingleFloPro> {
                 // var flowValue = ((flowData * (1545 / 28.964) * ((((temperatureValue / 100) * 9 / 5) + 32) + 460)) /
                 //         (144 * (pressureData * 0.00002952998015649))) /
                 //     60;
-                var flowValue = flowData / 100;
+                //Flow - CFH
+                // var flowValue = flowData / 100;
+                var flowValue = flowData / 100 * 0.4719474432;
 
                 // print('//bytes');
                 // print(pressureBytes);
@@ -152,31 +176,27 @@ class _SingleFloProState extends State<SingleFloPro> {
                           value: flowValue,
                           isPressure: false,
                           title: 'Flow',
-                          messureUnit: 'CFH',
+                          messureUnit: 'L/min',
                         ),
                         DetailGaugeDial(
                           value: pressureValue,
-                          // value: (((pressureValue - barometerValue).toDouble() * 0.00040146303904694)),
                           isPressure: true,
                           title: 'Pressure',
-                          messureUnit: 'inH2O',
+                          messureUnit: 'Bar',
                         ),
                       ],
                     ),
                     const Divider(height: 1),
-
                     const Padding(
                       padding: EdgeInsets.all(8.0),
-                      child: Text('Flow - CFH', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text('Flow - L/min', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                     MySingleChart(value: flowValue),
-                    // MySingleChart(value: 1000),
-
+                    // MySingleChart(value: 0),
                     const Divider(height: 1),
-
                     const Padding(
                       padding: EdgeInsets.all(8.0),
-                      child: Text('Pressure - inH2O', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: Text('Pressure - Bar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                     MySingleChart(value: pressureValue),
                   ],

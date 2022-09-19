@@ -59,8 +59,10 @@ class _MySingleChartState extends State<MySingleChart> {
     //   chartValues[1].removeAt(0);
     // }
 
-    minY = chartValues.reduce((curr, next) => curr.y < next.y ? curr : next).y;
-    maxY = chartValues.reduce((curr, next) => curr.y > next.y ? curr : next).y;
+    double tempMin = chartValues.reduce((curr, next) => curr.y < next.y ? curr : next).y;
+    double tempMax = chartValues.reduce((curr, next) => curr.y > next.y ? curr : next).y;
+    minY = tempMin - ((tempMax * 1.2 - tempMin) / 10 + .5);
+    maxY = tempMax + ((tempMax * 1.2 - tempMin) / 10 + .5);
 
     // minY =
     //     chartValues.reduce((curr, next) => curr.y < next.y ? curr : next).y;
@@ -134,9 +136,9 @@ class _MySingleChartState extends State<MySingleChart> {
                   minX: chartValues.first.x,
                   maxX: chartValues.first.x + 60, //60 secounds of data
                   // minY = min - difference from max to min divided by 10, with .5 margin
-                  minY: maxY >= 1000 ? minY - ((maxY - minY) / 10 + 50) : minY - ((maxY - minY) / 10 + .5),
+                  minY: minY,
                   // minX = min + difference from max to min divided by 10, with .5 margin
-                  maxY: maxY >= 1000 ? maxY + ((maxY - minY) / 10 + 50) : maxY + ((maxY - minY) / 10 + .5),
+                  maxY: maxY,
                   lineBarsData: [
                     LineChartBarData(
                       curveSmoothness: 0,
@@ -172,29 +174,37 @@ class _MySingleChartState extends State<MySingleChart> {
   double calculateInterval(double maxY, double minY) {
     double difference = maxY - minY;
     double interval;
-    if (maxY >= 1000) {
-      difference = difference / 1000;
-      if (difference < 0.5) {
-        interval = 10;
-      } else if (difference < 1) {
-        interval = 20;
-      } else if (difference < 2) {
-        interval = 50;
-      } else if (difference < 30) {
-        interval = (5 * ((difference) / 50).ceil()).toDouble();
-      } else {
-        interval = (50 * ((difference) / 500).ceil()).toDouble();
-      }
-    } else if (difference < 0.5) {
+    // if (maxY >= 1000) {
+    //   difference = difference / 1000;
+    //   if (difference < 0.5) {
+    //     interval = 10;
+    //   } else if (difference < 1) {
+    //     interval = 20;
+    //   } else if (difference < 2) {
+    //     interval = 50;
+    //   } else if (difference < 30) {
+    //     interval = (50 * ((difference) / 50).ceil()).toDouble();
+    //     print('interval');
+    //   } else {
+    //     interval = (50 * ((difference) / 500).ceil()).toDouble();
+    //   }
+    // } else
+    if (difference < 1.2) {
       interval = 0.1;
-    } else if (difference < 1) {
+    } else if (difference < 3) {
       interval = 0.2;
-    } else if (difference < 2) {
+    } else if (difference < 5) {
       interval = 0.4;
     } else if (difference < 30) {
       interval = (0.5 * ((difference) / 5).ceil()).toDouble();
-    } else {
+    } else if (difference < 300) {
       interval = (5 * ((difference) / 50).round()).toDouble();
+    } else if (difference < 1500) {
+      interval = (50 * ((difference) / 500).round()).toDouble();
+    } else if (difference < 5000) {
+      interval = (250 * ((difference) / 2500).round()).toDouble();
+    } else {
+      interval = (500 * ((difference) / 5000).round()).toDouble();
     }
     return interval;
   }
@@ -204,24 +214,19 @@ class _MySingleChartState extends State<MySingleChart> {
       return const Text('');
     }
     String suffix = '';
-    int decimals = 1;
+    int decimals = 2;
     double newValue = value;
-    if ((value >= 1000 && value < 10000) || (value <= -1000 && value > -10000)) {
+    if ((value >= 1000 && value < 1000000) || (value <= -1000 && value > -1000000)) {
       newValue = value / 1000;
       suffix = 'K';
-      decimals = 2;
-    } else if ((value >= 10000 && value < 100000) || (value <= -10000 && value > -100000)) {
-      newValue = value / 1000;
-      suffix = 'K';
-      decimals = 1;
-    } else if ((value >= 100000 && value < 1000000) || (value <= -100000 && value > -1000000)) {
-      newValue = value / 1000;
-      suffix = 'K';
-      decimals = 0;
     } else if ((value >= 1000000) || (value <= -1000000)) {
       newValue = value / 1000000;
       suffix = 'M';
-      decimals = 2;
+    }
+    if ((newValue >= 10 && newValue < 100) || (newValue <= -10 && newValue > -100)) {
+      decimals = 1;
+    } else if (newValue >= 100 || newValue <= -100) {
+      decimals = 0;
     }
 
     var style = const TextStyle();
@@ -229,6 +234,7 @@ class _MySingleChartState extends State<MySingleChart> {
     String text = '';
     if (remain > 0) {
       text = '${newValue.toStringAsFixed(decimals)}$suffix';
+
       style = const TextStyle(
         fontSize: 10,
         color: Colors.white54,

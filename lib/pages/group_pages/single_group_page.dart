@@ -234,7 +234,6 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
                         deviceId: group!.energyDeviceIds[0],
                       ),
                     )),
-              // !snapshot.data!
               !connectedBtDeviceIds.contains(group!.flowDeviceIds[0])
                   ? Expanded(child: IconWithAction(buttonTitle: 'Add Flow Meter', icon: const Icon(Icons.air_rounded), onPressed: () => addDevice(0)))
                   : Expanded(
@@ -260,13 +259,12 @@ class _SingleGroupPageState extends State<SingleGroupPage> {
                         ),
                       ),
                     ),
-              // !snapshot.data!
               !connectedBtDeviceIds.contains(group!.flowDeviceIds[1])
                   ? Expanded(child: IconWithAction(buttonTitle: 'Add Flow Meter', icon: const Icon(Icons.air_rounded), onPressed: () => addDevice(1)))
                   : Expanded(
                       child: SingleFloPro(
                         myGroup: group!,
-                        title: devices.firstWhere((element) => element.id.id == group!.flowDeviceIds[1]).name,
+                        title: 'TODO', //devices.firstWhere((element) => element.id.id == group!.flowDeviceIds[1]).name,
                         onConnectPressed: () => addDevice(1),
                         streams: [
                           characteristics[group!.flowDeviceIds[1]]?[CharacteristicName.time]?.value,

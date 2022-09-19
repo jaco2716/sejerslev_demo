@@ -36,9 +36,11 @@ class DetailGaugeDial extends StatelessWidget {
       color2 = Colors.orange;
       color3 = Colors.red;
     }
-    return SizedBox(
-      height: 165,
-      width: 125,
+    return Padding(
+      padding: const EdgeInsets.all(4),
+      // color: Colors.red,
+      // height: 165,
+      // width: 155,
       child: Column(
         children: [
           Stack(
@@ -50,73 +52,77 @@ class DetailGaugeDial extends StatelessWidget {
                 valueEnd: end,
                 interval: (end - start1) / 10,
               ),
-              TweenAnimationBuilder(
-                  duration: const Duration(milliseconds: 800),
-                  curve: Curves.easeInOut,
-                  tween: Tween<double>(begin: 0.0, end: value),
-                  builder: (context, double tweenValue, child) {
-                    return RadialGauge(
-                      axes: [
-                        RadialGaugeAxis(
-                          minValue: start1,
-                          maxValue: end,
-                          minAngle: minAngle,
-                          maxAngle: maxAngle,
-                          radius: 0.9,
-                          width: 0.17,
-                          color: Colors.transparent,
-                          pointers: [
-                            RadialNeedlePointer(
-                                value: tweenValue,
-                                thicknessStart: 16,
-                                thicknessEnd: 0,
-                                length: 0.85,
-                                knobRadiusAbsolute: 8,
-                                color: Colors.white,
-                                knobColor: Colors.white)
-                          ],
-                          ticks: [
-                            RadialTicks(
-                                interval: (end - start1) / 10,
-                                alignment: RadialTickAxisAlignment.inside,
-                                color: Colors.white,
-                                length: 0.22,
-                                children: [
-                                  RadialTicks(
-                                    // interval: 50,
-                                    ticksInBetween: 5,
-                                    length: 0.2,
-                                    color: Colors.grey,
-                                  ),
-                                ]),
-                          ],
-                          segments: [
-                            RadialGaugeSegment(
-                              minValue: start1,
-                              maxValue: start2,
-                              minAngle: minAngle + 30,
-                              maxAngle: -50,
-                              color: color1,
-                            ),
-                            RadialGaugeSegment(
-                              minValue: start2,
-                              maxValue: start3,
-                              minAngle: -50,
-                              maxAngle: 50,
-                              color: color2,
-                            ),
-                            RadialGaugeSegment(
-                              minValue: start3,
-                              maxValue: end,
-                              minAngle: 50,
-                              maxAngle: maxAngle,
-                              color: color3,
-                            ),
-                          ],
-                        ),
-                      ],
-                    );
-                  }),
+              SizedBox(
+                height: 125,
+                width: 125,
+                child: TweenAnimationBuilder(
+                    duration: const Duration(milliseconds: 800),
+                    curve: Curves.easeInOut,
+                    tween: Tween<double>(begin: 0.0, end: value),
+                    builder: (context, double tweenValue, child) {
+                      return RadialGauge(
+                        axes: [
+                          RadialGaugeAxis(
+                            minValue: start1,
+                            maxValue: end,
+                            minAngle: minAngle,
+                            maxAngle: maxAngle,
+                            radius: 0.9,
+                            width: 0.17,
+                            color: Colors.transparent,
+                            pointers: [
+                              RadialNeedlePointer(
+                                  value: tweenValue,
+                                  thicknessStart: 16,
+                                  thicknessEnd: 0,
+                                  length: 0.85,
+                                  knobRadiusAbsolute: 8,
+                                  color: Colors.white,
+                                  knobColor: Colors.white)
+                            ],
+                            ticks: [
+                              RadialTicks(
+                                  interval: (end - start1) / 10,
+                                  alignment: RadialTickAxisAlignment.inside,
+                                  color: Colors.white,
+                                  length: 0.22,
+                                  children: [
+                                    RadialTicks(
+                                      // interval: 50,
+                                      ticksInBetween: 5,
+                                      length: 0.2,
+                                      color: Colors.grey,
+                                    ),
+                                  ]),
+                            ],
+                            segments: [
+                              RadialGaugeSegment(
+                                minValue: start1,
+                                maxValue: start2,
+                                minAngle: minAngle + 30,
+                                maxAngle: -50,
+                                color: color1,
+                              ),
+                              RadialGaugeSegment(
+                                minValue: start2,
+                                maxValue: start3,
+                                minAngle: -50,
+                                maxAngle: 50,
+                                color: color2,
+                              ),
+                              RadialGaugeSegment(
+                                minValue: start3,
+                                maxValue: end,
+                                minAngle: 50,
+                                maxAngle: maxAngle,
+                                color: color3,
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    }),
+              ),
               Padding(
                 padding: const EdgeInsets.only(top: 100.0),
                 child: Column(

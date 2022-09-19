@@ -50,10 +50,10 @@ class _SingleEnergyDeviceState extends State<SingleEnergyDevice> {
       print(event);
       isOnline = event["isOnline"] as bool? ?? false;
       isOn = event["1"] as bool? ?? false;
-      curCurrent = (event["18"] as int? ?? 0).toDouble();
+      curCurrent = (event["18"] as int? ?? 0).toDouble() / 1000; // Ampere
       curPower = (event["19"] as int? ?? 0).toDouble();
       curVoltage = (event["20"] as int? ?? 0).toDouble() / 10;
-      totalEle = (event["101"] as int? ?? 0).toDouble();
+      totalEle = (event["101"] as int? ?? 0).toDouble() / 100; // kWH
       setState(() {});
     });
   }
@@ -135,41 +135,41 @@ class _SingleEnergyDeviceState extends State<SingleEnergyDevice> {
           ),
           Text(isOn ? 'Power on' : 'Power off'),
           DetailGaugeDial(
-            value: curVoltage,
+            value: curCurrent,
             isPressure: false,
-            title: 'Electricity',
-            messureUnit: 'V',
+            title: 'Electric Current',
+            messureUnit: 'A',
             // start2: 20,
-            end: 500,
+            end: 100,
           ),
-          // const SizedBox(height: 20),
           const Divider(height: 1),
           const Padding(
             padding: EdgeInsets.all(8.0),
-            child: Text('Electricity - V - curVoltage', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          ),
-          MySingleChart(value: curVoltage),
-          const Divider(height: 1),
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Text('Total Electricity - KWh - totalEle', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          ),
-          // MySingleChart(value: (dValueSnapshot.data?["20"] as int? ?? 0).toDouble()),
-          MySingleChart(value: totalEle),
-          const Divider(height: 1),
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Text('Total Electricity - W - curPower', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          ),
-          // MySingleChart(value: (dValueSnapshot.data?["20"] as int? ?? 0).toDouble()),
-          MySingleChart(value: curPower),
-          const Divider(height: 1),
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Text('Total Electricity - mA - curCurrent', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            child: Text('Electric Current - Ampere', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
           // MySingleChart(value: (dValueSnapshot.data?["20"] as int? ?? 0).toDouble()),
           MySingleChart(value: curCurrent),
+          // const SizedBox(height: 20),
+          // const Divider(height: 1),
+          // const Padding(
+          //   padding: EdgeInsets.all(8.0),
+          //   child: Text('Electricity - V - curVoltage', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          // ),
+          // MySingleChart(value: curVoltage),
+          const Divider(height: 1),
+          const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text('Total Electricity - KWh', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ),
+          // MySingleChart(value: (dValueSnapshot.data?["20"] as int? ?? 0).toDouble()),
+          MySingleChart(value: totalEle / 100),
+          // const Divider(height: 1),
+          // const Padding(
+          //   padding: EdgeInsets.all(8.0),
+          //   child: Text('Total Electricity - W - curPower', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          // ),
+          // // MySingleChart(value: (dValueSnapshot.data?["20"] as int? ?? 0).toDouble()),
+          // MySingleChart(value: curPower),
         ],
       ),
     );
