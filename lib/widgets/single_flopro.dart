@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:rxdart/rxdart.dart';
 import '../model/my_group.dart';
 import 'icon_with_ation.dart';
@@ -96,15 +97,15 @@ class _SingleFloProState extends State<SingleFloPro> {
                 // var pressureValue = (pressureData - barometerData).toDouble() * 0.00040146303904694;
                 var pressureValue = (pressureData - barometerData).toDouble() / 1000000;
                 var temperatureBytes = Uint8List.fromList(streamSnapshot.data![4]);
-                var temperatureValue = ByteData.view(temperatureBytes.buffer).getInt16(0, Endian.little);
+                var temperatureValue = ByteData.view(temperatureBytes.buffer).getInt16(0, Endian.little) / 100;
                 var flowBytes = Uint8List.fromList(streamSnapshot.data![3]);
                 var flowData = ByteData.view(flowBytes.buffer).getInt32(0, Endian.little);
-                // var flowValue = ((flowData * (1545 / 28.964) * ((((temperatureValue / 100) * 9 / 5) + 32) + 460)) /
-                //         (144 * (pressureData * 0.00002952998015649))) /
-                //     60;
                 //Flow - CFH
                 // var flowValue = flowData / 100;
                 var flowValue = flowData / 100 * 0.4719474432;
+                // var flowValue = ((flowData * (1545 / 28.964) * ((((temperatureValue / 100) * 9 / 5) + 32) + 460)) /
+                //         (144 * (pressureData * 0.00002952998015649))) /
+                //     60;
 
                 // print('//bytes');
                 // print(pressureBytes);
@@ -152,8 +153,8 @@ class _SingleFloProState extends State<SingleFloPro> {
                             children: [
                               Text(
                                 widget.myGroup.temperatureUnit == TemperatureUnit.celsius
-                                    ? '${(temperatureValue / 100).toStringAsFixed(2)}°'
-                                    : '${celsiusToFahrenheit(temperatureValue / 100).toStringAsFixed(2)}°',
+                                    ? '${(temperatureValue).toStringAsFixed(2)}°'
+                                    : '${celsiusToFahrenheit(temperatureValue).toStringAsFixed(2)}°',
                                 // '${(((temperatureValue / 100) * 9 / 5) + 32).toStringAsFixed(2)}°',
                                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                               ),
@@ -173,16 +174,18 @@ class _SingleFloProState extends State<SingleFloPro> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         DetailGaugeDial(
-                          value: flowValue,
+                          // value: flowValue,
+                          value: widget.myGroup.temperatureUnit == TemperatureUnit.celsius ? flowValue : lPerMinToCFH(flowValue),
                           isPressure: false,
                           title: 'Flow',
-                          messureUnit: 'L/min',
+                          messureUnit: widget.myGroup.temperatureUnit == TemperatureUnit.celsius ? 'L/min' : 'CFH',
                         ),
                         DetailGaugeDial(
-                          value: pressureValue,
+                          // value: pressureValue,
+                          value: widget.myGroup.temperatureUnit == TemperatureUnit.celsius ? pressureValue : barToPsi(pressureValue),
                           isPressure: true,
                           title: 'Pressure',
-                          messureUnit: 'Bar',
+                          messureUnit: widget.myGroup.temperatureUnit == TemperatureUnit.celsius ? 'Bar' : 'PSI',
                         ),
                       ],
                     ),
@@ -212,7 +215,15 @@ class _SingleFloProState extends State<SingleFloPro> {
     );
   }
 
-  double celsiusToFahrenheit(double celsuis) {
-    return (celsuis * 9 / 5) + 32;
+  double celsiusToFahrenheit(double value) {
+    return (value * 9 / 5) + 32;
+  }
+
+  double barToPsi(double value) {
+    return value * 14.503773773;
+  }
+
+  double lPerMinToCFH(double value) {
+    return value * 2.1188800032893;
   }
 }

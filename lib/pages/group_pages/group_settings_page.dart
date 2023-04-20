@@ -195,8 +195,10 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                       const Divider(),
                       Card(
                         child: ListTile(
-                          leading: const Icon(Icons.thermostat),
-                          title: const Text('Temperature Unit'),
+                          // leading: const Icon(Icons.thermostat),
+                          leading: const Icon(Icons.scale_rounded),
+                          // title: const Text('Temperature Unit'),
+                          title: const Text('Measurement System'),
                           trailing: PopupMenuButton<TemperatureUnit>(
                             child: SizedBox(
                               width: 150,
@@ -227,11 +229,13 @@ class _GroupSettingsPageState extends State<GroupSettingsPage> {
                               return [
                                 const PopupMenuItem<TemperatureUnit>(
                                   value: TemperatureUnit.celsius,
-                                  child: Text('Celsius'),
+                                  // child: Text('Celsius'),
+                                  child: Text('Metric'),
                                 ),
                                 const PopupMenuItem<TemperatureUnit>(
                                   value: TemperatureUnit.fahrenheit,
-                                  child: Text('Fahrenheit'),
+                                  // child: Text('Fahrenheit'),
+                                  child: Text('Imperial'),
                                 ),
                               ];
                             },
